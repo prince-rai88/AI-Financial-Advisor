@@ -1,53 +1,94 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import API from "../api";
-import { useNavigate, Link } from "react-router-dom";
 
 function Register() {
-  const [data, setData] = useState({ username: "", password: "" });
   const navigate = useNavigate();
+  const [form, setForm] = useState({ username: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (loading) return;
+
+    setLoading(true);
+    setError("");
+
     try {
-      await API.post("register/", data);
-      alert("Registered successfully!");
-      navigate("/login");
-    } catch (err) {
-      alert("Registration failed. Try another username.");
+      await API.post("register/", {
+        username: form.username.trim(),
+        password: form.password,
+      });
+      navigate("/login", { replace: true });
+    } catch {
+      setError("Registration failed. Please choose another username.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen">
-      <form
-        onSubmit={handleRegister}
-        className="bg-white p-10 rounded-3xl w-96 shadow-2xl"
-      >
-        <h2 className="text-3xl font-bold mb-8 text-indigo-600 text-center">
-          Register
-        </h2>
-        <input
-          className="input mb-4"
-          placeholder="Username"
-          value={data.username}
-          onChange={(e) => setData({ ...data, username: e.target.value })}
-        />
-        <input
-          className="input mb-6"
-          type="password"
-          placeholder="Password"
-          value={data.password}
-          onChange={(e) => setData({ ...data, password: e.target.value })}
-        />
-        <button className="btn w-full mb-4">Register</button>
-        <p className="text-gray-500 text-center">
-          Already have an account?{" "}
-          <Link to="/login" className="text-indigo-600 font-semibold">
-            Login
+    <section className="auth-shell">
+      <div className="auth-card">
+        <p className="mb-2 inline-flex rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-sky-700">
+          Get Started
+        </p>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Create account</h1>
+        <p className="mt-2 muted-text">Set up your workspace in less than a minute.</p>
+
+        <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-slate-700">Username</span>
+            <input
+              className="form-input"
+              name="username"
+              type="text"
+              autoComplete="username"
+              value={form.username}
+              onChange={handleChange}
+              placeholder="Pick a username"
+              required
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-slate-700">Password</span>
+            <input
+              className="form-input"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="Create a secure password"
+              minLength={6}
+              required
+            />
+          </label>
+
+          {error ? (
+            <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p>
+          ) : null}
+
+          <button className="btn-primary w-full" type="submit" disabled={loading}>
+            {loading ? "Creating account..." : "Register"}
+          </button>
+        </form>
+
+        <p className="mt-6 text-sm text-slate-600">
+          Already registered?{" "}
+          <Link className="font-semibold text-teal-700 hover:text-teal-800" to="/login">
+            Back to login
           </Link>
         </p>
-      </form>
-    </div>
+      </div>
+    </section>
   );
 }
 

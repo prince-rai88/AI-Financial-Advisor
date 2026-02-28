@@ -14,6 +14,22 @@ class RegisterSerializer(serializers.ModelSerializer):
         return User.objects.create_user(**validated_data)
 
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    account_type = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "name", "email", "date_joined", "account_type"]
+
+    def get_name(self, obj):
+        full_name = obj.get_full_name().strip()
+        return full_name if full_name else obj.username
+
+    def get_account_type(self, obj):
+        return "Standard"
+
+
 class TransactionSerializer(serializers.ModelSerializer):
     category = serializers.StringRelatedField()
 

@@ -4,7 +4,8 @@ from .views import (
     UploadStatementView,
     TransactionListView,
     SummaryView,
-    DeleteStatementView
+    DeleteStatementView,
+    UserDetailView,
 )
 
 from rest_framework_simplejwt.views import (
@@ -16,6 +17,7 @@ urlpatterns = [
     path("register/", RegisterView.as_view()),
     path("login/", TokenObtainPairView.as_view()),
     path("refresh/", TokenRefreshView.as_view()),
+    path("user/", UserDetailView.as_view()),
 
     path("upload/", UploadStatementView.as_view()),
     path("transactions/", TransactionListView.as_view()),

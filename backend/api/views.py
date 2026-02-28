@@ -14,7 +14,8 @@ from .serializers import (
     RegisterSerializer,
     TransactionSerializer,
     StatementSerializer,
-    CategorySerializer
+    CategorySerializer,
+    UserProfileSerializer,
 )
 
 
@@ -43,6 +44,12 @@ class RegisterView(APIView):
             serializer.save()
             return Response({"message": "User created successfully"})
         return Response(serializer.errors, status=400)
+
+
+class UserDetailView(APIView):
+    def get(self, request):
+        serializer = UserProfileSerializer(request.user)
+        return Response(serializer.data)
 
 
 class UploadStatementView(APIView):
