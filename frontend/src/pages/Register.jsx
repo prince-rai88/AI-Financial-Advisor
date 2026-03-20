@@ -1,10 +1,17 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import API from "../api";
+import { authApi } from "../api";
+import { notify } from "../utils/toast";
 
 function Register() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: "", password: "" });
+  const [form, setForm] = useState({
+    username: "",
+    email: "",
+    first_name: "",
+    last_name: "",
+    password: "",
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -21,74 +28,101 @@ function Register() {
     setError("");
 
     try {
-      await API.post("register/", {
+      await authApi.register({
         username: form.username.trim(),
+        email: form.email.trim(),
+        first_name: form.first_name.trim(),
+        last_name: form.last_name.trim(),
         password: form.password,
       });
+      notify("Registration successful. Please login.", "success");
       navigate("/login", { replace: true });
-    } catch {
-      setError("Registration failed. Please choose another username.");
+    } catch (requestError) {
+      const message =
+        requestError?.response?.data?.username?.[0] ||
+        requestError?.response?.data?.email?.[0] ||
+        "Registration failed. Please review your details.";
+      setError(message);
+      notify(message, "error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <section className="auth-shell">
-      <div className="auth-card">
-        <p className="mb-2 inline-flex rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-sky-700">
-          Get Started
-        </p>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Create account</h1>
-        <p className="mt-2 muted-text">Set up your workspace in less than a minute.</p>
+    <div className="min-h-screen bg-[#0d0f14] flex items-center justify-center p-4">
+      <div className="w-full max-w-[380px]">
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <div className="w-8 h-8 rounded-xl bg-[#6c63ff] flex items-center justify-center text-white text-[13px] font-bold">
+            F
+          </div>
+          <span className="text-[20px] font-bold text-[#f1f5f9]">
+            Fin<span className="text-[#6c63ff]">AI</span>
+          </span>
+        </div>
 
-        <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
-          <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-slate-700">Username</span>
+        <div className="w-full max-w-[420px] rounded-2xl p-[1px] bg-[linear-gradient(to_right,#6c63ff,#10b981)]">
+          <div className="bg-[#161b27] rounded-2xl p-8">
+            <h2 className="text-[18px] font-semibold text-[#f1f5f9] mb-1">Create account</h2>
+            <p className="text-[13px] text-[#64748b] mb-6">Start tracking your finances</p>
+
+            <form onSubmit={handleSubmit}>
+            <label className="text-[12px] text-[#64748b] font-medium mb-1.5 block">Username</label>
             <input
-              className="form-input"
               name="username"
               type="text"
-              autoComplete="username"
+              placeholder="Choose a username"
               value={form.username}
               onChange={handleChange}
-              placeholder="Pick a username"
+              className="mb-4 text-[14px]"
               required
             />
-          </label>
 
-          <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-slate-700">Password</span>
+            <label className="text-[12px] text-[#64748b] font-medium mb-1.5 block">Email</label>
             <input
-              className="form-input"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={handleChange}
+              className="mb-4 text-[14px]"
+              required
+            />
+
+            <label className="text-[12px] text-[#64748b] font-medium mb-1.5 block">Password</label>
+            <input
               name="password"
               type="password"
               autoComplete="new-password"
+              placeholder="Min. 8 characters"
               value={form.password}
               onChange={handleChange}
-              placeholder="Create a secure password"
               minLength={6}
+              className="mb-6 text-[14px]"
               required
             />
-          </label>
 
-          {error ? (
-            <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p>
-          ) : null}
+            {error ? <p className="mb-4 text-[12px] text-[#f43f5e]">{error}</p> : null}
 
-          <button className="btn-primary w-full" type="submit" disabled={loading}>
-            {loading ? "Creating account..." : "Register"}
-          </button>
-        </form>
+            <button
+              className="w-full bg-[#6c63ff] hover:bg-[#5a52e0] text-white font-semibold py-3 rounded-xl text-[14px] transition-colors"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Creating account..." : "Create account"}
+            </button>
+          </form>
+          </div>
+        </div>
 
-        <p className="mt-6 text-sm text-slate-600">
-          Already registered?{" "}
-          <Link className="font-semibold text-teal-700 hover:text-teal-800" to="/login">
-            Back to login
+        <p className="text-center text-[13px] text-[#64748b] mt-5">
+          Already have an account?
+          <Link className="text-[#6c63ff] hover:underline ml-1" to="/login">
+            Sign in
           </Link>
         </p>
       </div>
-    </section>
+    </div>
   );
 }
 

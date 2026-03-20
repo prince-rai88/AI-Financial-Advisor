@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
-import Navbar from "./components/Navbar";
+import { Navigate, Route, Routes } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
+import ToastContainer from "./components/ToastContainer";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import Transactions from "./pages/Transactions";
+import Insights from "./pages/Insights";
+import Budget from "./pages/Budget";
 import {
   ACCESS_TOKEN_KEY,
   REFRESH_TOKEN_KEY,
@@ -13,7 +16,6 @@ import {
 } from "./utils/auth";
 
 function App() {
-  const location = useLocation();
   const [token, setToken] = useState(() => {
     const stored = localStorage.getItem(ACCESS_TOKEN_KEY);
     if (!isTokenValid(stored)) {
@@ -52,12 +54,9 @@ function App() {
     setToken(null);
   };
 
-  const publicPaths = ["/login", "/register"];
-  const showNavbar = isAuth && !publicPaths.includes(location.pathname);
-
   return (
     <div className="app-shell">
-      {showNavbar ? <Navbar onLogout={handleLogout} /> : null}
+      <ToastContainer />
       <main className="app-main">
         <Routes>
           <Route
@@ -82,7 +81,31 @@ function App() {
             path="/dashboard"
             element={
               <PrivateRoute>
-                <Dashboard />
+                <Dashboard onLogout={handleLogout} />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/transactions"
+            element={
+              <PrivateRoute>
+                <Transactions onLogout={handleLogout} />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/insights"
+            element={
+              <PrivateRoute>
+                <Insights onLogout={handleLogout} />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/budget"
+            element={
+              <PrivateRoute>
+                <Budget onLogout={handleLogout} />
               </PrivateRoute>
             }
           />

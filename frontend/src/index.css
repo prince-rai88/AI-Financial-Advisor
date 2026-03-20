@@ -2,78 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg-base: #f4f7fb;
-  --bg-soft: #e9f2ff;
-  --bg-accent: #eafaf7;
-  --ink: #0f172a;
-  --muted: #475569;
-  --primary: #0f766e;
-  --primary-strong: #0b5d57;
-  --ring: #2dd4bf;
+body {
+  background: #0a0c12;
+  color: #f1f5f9;
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 * {
   box-sizing: border-box;
 }
 
-html,
-body,
-#root {
-  min-height: 100%;
+input,
+textarea,
+select {
+  background: #161b27 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f1f5f9 !important;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
 }
 
-body {
-  margin: 0;
-  color: var(--ink);
-  font-family: "Plus Jakarta Sans", "Avenir Next", "Segoe UI", sans-serif;
-  background:
-    radial-gradient(circle at 10% 10%, rgba(20, 184, 166, 0.17), transparent 32%),
-    radial-gradient(circle at 90% 15%, rgba(56, 189, 248, 0.2), transparent 30%),
-    linear-gradient(180deg, var(--bg-soft) 0%, var(--bg-base) 55%, #f8fafc 100%);
-  background-attachment: fixed;
+input:focus,
+textarea:focus {
+  border-color: #6c63ff !important;
 }
 
-.app-shell {
-  min-height: 100vh;
+::-webkit-scrollbar {
+  width: 4px;
 }
 
-.app-main {
-  width: min(1120px, calc(100% - 2rem));
-  margin: 0 auto;
-  padding: 1.25rem 0 2rem;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-@layer components {
-  .surface-card {
-    @apply rounded-2xl border border-white/70 bg-white/80 shadow-xl shadow-slate-900/5 backdrop-blur-md;
-  }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+}
 
-  .btn-primary {
-    @apply inline-flex items-center justify-center rounded-xl bg-teal-700 px-5 py-3 text-sm font-semibold text-white transition duration-200 hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-300 disabled:cursor-not-allowed disabled:opacity-70;
-  }
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
 
-  .btn-ghost {
-    @apply inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition duration-200 hover:border-slate-400 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300;
-  }
-
-  .form-input {
-    @apply w-full rounded-xl border border-slate-300/90 bg-white/90 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition duration-200 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200;
-  }
-
-  .muted-text {
-    @apply text-sm text-slate-600;
-  }
-
-  .auth-shell {
-    @apply grid min-h-[calc(100vh-2.5rem)] place-items-center;
-  }
-
-  .auth-card {
-    @apply surface-card w-full max-w-md p-8 sm:p-10;
-  }
-
-  .dashboard-grid {
-    @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-4;
-  }
+::selection {
+  background: rgba(108, 99, 255, 0.3);
+  color: #f1f5f9;
 }

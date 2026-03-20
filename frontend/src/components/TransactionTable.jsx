@@ -54,8 +54,8 @@ export default function TransactionTable({ transactions, loading }) {
 
   if (loading) {
     return (
-      <section className="surface-card p-6">
-        <div className="h-24 animate-pulse rounded-xl bg-slate-100" />
+      <section className="rounded-xl border border-border-subtle bg-bg-surface p-4">
+        <div className="h-24 animate-pulse rounded-xl bg-bg-elevated" />
       </section>
     );
   }
@@ -63,9 +63,9 @@ export default function TransactionTable({ transactions, loading }) {
   if (!transactions.length) return null;
 
   return (
-    <section className="surface-card p-6">
+    <section className="rounded-xl border border-border-subtle bg-bg-surface p-4">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-lg font-semibold text-slate-900">Transactions</h3>
+        <h3 className="text-sm font-semibold text-text-primary">Transactions</h3>
         <div className="flex gap-2">
           <button className="btn-ghost" type="button" onClick={() => toggleSort("date")}>
             Sort Date ({sortBy === "date" ? sortDirection : "-"})
@@ -77,34 +77,34 @@ export default function TransactionTable({ transactions, loading }) {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full border-separate border-spacing-y-2">
+        <table className="min-w-full border-separate border-spacing-y-2 text-text-secondary">
           <thead>
             <tr>
-              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Date</th>
-              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Type</th>
-              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Description</th>
-              <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Amount</th>
+              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.08em] text-text-muted">Date</th>
+              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.08em] text-text-muted">Type</th>
+              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.08em] text-text-muted">Description</th>
+              <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-[0.08em] text-text-muted">Amount</th>
             </tr>
           </thead>
           <tbody>
             {paginated.map((tx) => {
               const isExpense = Number(tx.amount) < 0;
               return (
-                <tr key={tx.id} className="rounded-xl bg-slate-50/80 transition hover:bg-slate-100/90">
-                  <td className="whitespace-nowrap rounded-l-xl px-3 py-3 text-sm text-slate-700">{tx.date}</td>
+                <tr key={tx.id} className="rounded-xl bg-bg-elevated/80 transition hover:bg-bg-elevated">
+                  <td className="whitespace-nowrap rounded-l-xl px-3 py-3 text-sm text-text-secondary">{tx.date}</td>
                   <td className="px-3 py-3 text-sm">
                     <span
                       className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                        isExpense ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-700"
+                        isExpense ? "bg-red/10 text-red" : "bg-green/10 text-green"
                       }`}
                     >
                       {txType(tx.amount)}
                     </span>
                   </td>
-                  <td className="max-w-[380px] truncate px-3 py-3 text-sm font-medium text-slate-900">{tx.description}</td>
+                  <td className="max-w-[380px] truncate px-3 py-3 text-sm font-medium text-text-primary">{tx.description}</td>
                   <td
                     className={`rounded-r-xl px-3 py-3 text-right text-sm font-semibold ${
-                      isExpense ? "text-rose-600" : "text-emerald-600"
+                      isExpense ? "text-red" : "text-green"
                     }`}
                   >
                     {formatAmount(tx.amount)}
@@ -117,7 +117,7 @@ export default function TransactionTable({ transactions, loading }) {
       </div>
 
       <div className="mt-4 flex items-center justify-between">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-text-muted">
           Page {currentPage} of {totalPages}
         </p>
         <div className="flex gap-2">

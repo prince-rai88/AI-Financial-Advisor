@@ -1,26 +1,33 @@
-from django.urls import path
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenRefreshView
+
 from .views import (
+    AnomaliesAPIView,
+    BudgetAPIView,
+    InsightsAPIView,
+    LoginView,
     RegisterView,
-    UploadStatementView,
-    TransactionListView,
-    SummaryView,
-    DeleteStatementView,
-    UserDetailView,
+    StatementViewSet,
+    SummaryAPIView,
+    TransactionViewSet,
+    UploadViewSet,
+    UserViewSet,
 )
 
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
+router = DefaultRouter()
+router.register("user", UserViewSet, basename="user")
+router.register("transactions", TransactionViewSet, basename="transactions")
+router.register("upload", UploadViewSet, basename="upload")
+router.register("statements", StatementViewSet, basename="statements")
 
 urlpatterns = [
-    path("register/", RegisterView.as_view()),
-    path("login/", TokenObtainPairView.as_view()),
-    path("refresh/", TokenRefreshView.as_view()),
-    path("user/", UserDetailView.as_view()),
-
-    path("upload/", UploadStatementView.as_view()),
-    path("transactions/", TransactionListView.as_view()),
-    path("summary/", SummaryView.as_view()),
-    path("delete-statement/<int:statement_id>/", DeleteStatementView.as_view()),
+    path("register/", RegisterView.as_view(), name="register"),
+    path("login/", LoginView.as_view(), name="login"),
+    path("refresh/", TokenRefreshView.as_view(), name="token-refresh"),
+    path("summary/", SummaryAPIView.as_view(), name="summary"),
+    path("insights/", InsightsAPIView.as_view(), name="insights"),
+    path("budget/", BudgetAPIView.as_view(), name="budget"),
+    path("anomalies/", AnomaliesAPIView.as_view(), name="anomalies"),
+    path("", include(router.urls)),
 ]
