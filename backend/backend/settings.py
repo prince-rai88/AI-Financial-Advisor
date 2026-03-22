@@ -5,6 +5,8 @@ Django settings for backend project.
 import os
 from pathlib import Path
 
+import dj_database_url
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -82,9 +84,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
-DB_ENGINE = os.getenv("DB_ENGINE", "django.db.backends.postgresql")
+# ── Database ──────────────────────────────────────────────────────────────────
+# Priority:
+#   1. DATABASE_URL env var (Render provides this automatically)
+#   2. DB_ENGINE=sqlite3 (local dev with SQLite)
+#   3. Individual POSTGRES_* vars (local dev with PostgreSQL)
 
-if DB_ENGINE == "django.db.backends.sqlite3":
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+        )
+    }
+elif os.getenv("DB_ENGINE") == "django.db.backends.sqlite3":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -102,6 +117,8 @@ else:
             "PORT": os.getenv("POSTGRES_PORT", "5432"),
         }
     }
+
+# ─────────────────────────────────────────────────────────────────────────────
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -146,7 +163,6 @@ CSRF_TRUSTED_ORIGINS = env_list(
     "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000",
 )
 
-# Production settings
 if not DEBUG:
     SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", True)
     SESSION_COOKIE_SECURE = True
