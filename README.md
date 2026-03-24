@@ -1,8 +1,8 @@
 # 🚀 AI Financial Advisor
 
-**AI-powered personal finance SaaS** that turns raw statements into insights, budgets, and anomaly alerts.
+**AI-powered personal finance SaaS** that transforms statements into clarity — track spending, detect anomalies, and forecast budgets with machine learning.
 
-**Live:** [Frontend (Vercel)](https://your-vercel-app.vercel.app) • [Backend (Render)](https://your-render-api.onrender.com)
+**Live:** [Frontend](https://ai-financial-advisor-rouge.vercel.app) • [Backend](https://finai-backend-kmq3.onrender.com)
 
 ![Status](https://img.shields.io/badge/status-live-brightgreen)
 ![Stack](https://img.shields.io/badge/stack-React%20%7C%20Django%20%7C%20PostgreSQL-6c63ff)
@@ -12,74 +12,67 @@
 ---
 
 ## ✨ Features
-- 🔐 **JWT authentication** with secure per-user data isolation
-- 📤 **CSV/XLSX upload** with automatic parsing and categorization
-- 📊 **Dashboards & charts** with clean, dark SaaS UI
-- 🧠 **ML insights** (trend detection + anomaly detection)
-- 🧾 **Transactions management** with search, filters, and pagination
-- 💸 **Budget prediction** for the next 30 days
+- 🔐 **JWT authentication** with secure per-user data isolation  
+- 📤 **CSV/XLSX upload** for fast statement ingestion  
+- 📊 **Dashboard analytics** with trends and summaries  
+- 🧠 **ML insights** (anomaly detection + spending trends)  
+- 💸 **Budget prediction** for the next 30 days  
+- 🧾 **Expense tracking** with categories and filters  
 
 ---
 
 ## 🧱 Tech Stack
 
 **Frontend**
-- React + Vite
-- Tailwind CSS
-- Chart.js
+- React, Vite, Tailwind CSS, Chart.js
 
 **Backend**
-- Django + Django REST Framework
-- JWT Auth (SimpleJWT)
-- Scikit-learn
+- Django, Django REST Framework, JWT (SimpleJWT)
 
 **Database**
 - PostgreSQL (Supabase)
 
 **Deployment**
-- Frontend: Vercel
-- Backend: Render (Docker)
-- DB: Supabase PostgreSQL
+- Vercel, Render, Docker
 
 ---
 
-## 🧩 Architecture (Brief)
-- React frontend consumes REST APIs from Django.
-- Django parses uploads, stores transactions, and runs ML services.
-- ML layer generates insights, anomalies, and budget predictions.
+## 🧩 Architecture
+**React → Django API → PostgreSQL → ML Layer**
 
 ---
 
 ## 🧭 How It Works
-1. **Sign up / log in**
-2. **Upload a statement (CSV/XLSX)**
-3. **Transactions are parsed and categorized**
-4. **Insights & anomalies are computed**
-5. **Dashboards update in real-time**
+1. Sign up and log in with JWT authentication  
+2. Upload a CSV/XLSX financial statement  
+3. Transactions are parsed and categorized  
+4. ML layer detects anomalies and trends  
+5. Dashboard updates with insights and budget prediction  
 
 ---
 
 ## 🖼 Screenshots
-> Add screenshots here (Dashboard, Transactions, Insights, Budget)
+_Add your product screenshots here (Dashboard, Transactions, Insights, Budget)._
 
 ---
 
 ## 🔌 API Overview
-- `POST /api/register/`
-- `POST /api/login/`
-- `POST /api/refresh/`
-- `GET /api/user/`
-- `POST /api/upload/`
-- `GET /api/transactions/`
-- `GET /api/summary/`
-- `GET /api/insights/`
-- `GET /api/budget/`
+```http
+POST /api/register/
+POST /api/login/
+POST /api/refresh/
+GET  /api/user/
+POST /api/upload/
+GET  /api/transactions/
+GET  /api/summary/
+GET  /api/insights/
+GET  /api/budget/
+```
 
 ---
 
 ## 📁 Sample CSV
-Example format (headers required):
-```
+```csv
 date,description,amount
 2025-01-12,Swiggy Order,-450
 2025-01-15,Uber Ride,-320
@@ -91,7 +84,7 @@ date,description,amount
 ## ⚙️ Environment Variables
 
 **Backend (`backend/.env`)**
-```
+```env
 DJANGO_SECRET_KEY=your-secret
 DJANGO_DEBUG=True
 DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
@@ -100,8 +93,8 @@ MAX_UPLOAD_SIZE_MB=10
 DATABASE_URL=postgres://user:pass@host:5432/db
 ```
 
-**Frontend (`frontend/.env.development`)**
-```
+**Frontend (`frontend/.env`)**
+```env
 VITE_API_BASE_URL=http://127.0.0.1:8000/api/
 ```
 
@@ -112,7 +105,6 @@ VITE_API_BASE_URL=http://127.0.0.1:8000/api/
 ### Backend
 ```bash
 cd backend
-cp .env.example .env
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
@@ -128,17 +120,15 @@ npm run dev
 ---
 
 ## 🚀 Deployment
-- **Frontend:** Vercel
-- **Backend:** Render (Docker)
-- **Database:** Supabase PostgreSQL
-
-Make sure environment variables are configured in both platforms.
+- **Frontend:** Vercel  
+- **Backend:** Render (Docker)  
+- **Database:** Supabase PostgreSQL  
 
 ---
 
 ## 👤 Author
-**Prince Rai**
-- GitHub: https://github.com/prince-rai88
-- LinkedIn: https://linkedin.com/in/your-link
+**Prince Rai**  
+- GitHub: https://github.com/prince-rai88  
+- LinkedIn: https://www.linkedin.com/in/prince-rai-88pr127  
 
-If this helped you, **star the repo** ⭐ — it keeps the project moving.
+⭐ **Star this repo if you found it useful**
