@@ -16,4 +16,4 @@ RUN python manage.py collectstatic --no-input
 
 EXPOSE $PORT
 
-CMD gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+CMD ["sh", "-c", "python manage.py migrate && gunicorn backend.wsgi:application -c gunicorn.conf.py"]
