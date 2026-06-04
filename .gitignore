@@ -1,6 +1,7 @@
-# Environment
+# Environment Variables
 .env
-.env.local
+.env.*
+!.env.example
 backend/.env
 frontend/.env.local
 frontend/.env.production
@@ -12,8 +13,35 @@ backend/staticfiles/
 backend/media/
 backend/db.sqlite3
 
-# Node
+venv/
+env/
+.django_secret
+
+# Node.js
 node_modules/
 **/node_modules/
 frontend/node_modules/
+dist/
+build/
+coverage/
 frontend/dist/
+
+# IDE and OS
+.DS_Store
+.vscode/
+.idea/
+
+# Database
+db.sqlite3
+*.sqlite3
+
+# Temp/Logs
+logs/
+*.log
+
+# Sensitive Data / Uploads
+backend/media/
+backend/statements/*.csv
+backend/statements/*.pdf
+# Prevent committing sample or real bank statements
+*.csv

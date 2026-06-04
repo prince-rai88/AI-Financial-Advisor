@@ -4,6 +4,7 @@ Django settings for backend project.
 
 import os
 from pathlib import Path
+import os
 
 import dj_database_url
 
