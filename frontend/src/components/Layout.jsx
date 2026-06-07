@@ -77,7 +77,7 @@ export default function Layout({ title, rightSlot, children, onLogout }) {
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-[220px] transform transition-transform duration-200 lg:translate-x-0 bg-[#0f1117] border-r border-white/5 flex flex-col py-6 px-4 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-[220px] transform transition-transform duration-200 lg:static lg:transform-none lg:flex-shrink-0 bg-[#0f1117] border-r border-white/5 flex flex-col py-6 px-4 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex items-center gap-2 px-2 mb-8">
           <div className="w-7 h-7 rounded-lg bg-[#6c63ff] flex items-center justify-center text-white text-[11px] font-bold">
             F
@@ -113,7 +113,7 @@ export default function Layout({ title, rightSlot, children, onLogout }) {
         </div>
       </aside>
 
-      <main className="flex-1 lg:ml-[220px] flex flex-col min-h-screen overflow-auto">
+      <main className="flex-1 flex flex-col min-h-screen overflow-auto">
         <header className="flex items-center justify-between px-8 py-5 border-b border-white/5">
           <div className="flex items-center gap-3">
             <button 
