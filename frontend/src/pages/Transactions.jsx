@@ -308,7 +308,9 @@ export default function Transactions({ onLogout }) {
             )}
           </div>
         ) : (
-          <table className="w-full">
+          <div className="w-full">
+            <div className="hidden md:block">
+              <table className="w-full">
             <thead>
               <tr className="border-b border-white/[0.07]">
                 {[
@@ -391,7 +393,36 @@ export default function Transactions({ onLogout }) {
                 );
               })}
             </tbody>
-          </table>
+              </table>
+            </div>
+            <div className="md:hidden space-y-2 p-4 outline-none">
+              {paginated.map((tx, i) => (
+                <div key={tx.id || i} className="bg-[#1c2235] border border-white/[0.07] rounded-xl p-3">
+                  <div className="flex justify-between items-start mb-1">
+                    <span className="text-[13px] text-[#f1f5f9] font-medium line-clamp-1 flex-1 mr-2">
+                      {tx.description || "—"}
+                    </span>
+                    <span className={`text-[13px] font-bold flex-shrink-0 ${
+                      Number(tx.amount) > 0 ? "text-[#10b981]" : "text-[#f43f5e]"
+                    }`}>
+                      {Number(tx.amount) > 0 ? "+" : "−"}
+                      ₹{Math.abs(Number(tx.amount)).toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-[#64748b]">
+                      {tx.date ? new Date(tx.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                    </span>
+                    {tx.category?.name && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-lg bg-[#6c63ff]/10 text-[#6c63ff] border border-[#6c63ff]/20">
+                        {tx.category.name}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {totalPages > 1 && (

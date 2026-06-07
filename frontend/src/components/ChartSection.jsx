@@ -157,11 +157,11 @@ export default function ChartSection({ transactions }) {
   };
 
   return (
-    <section className="grid gap-3 lg:grid-cols-3">
+    <section className="grid gap-4 grid-cols-1 lg:grid-cols-3">
       <article className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5 lg:col-span-2">
         <h3 className="text-[13px] font-semibold text-[#f1f5f9] mb-0.5">Monthly Expense Trend</h3>
         <p className="text-[12px] text-[#64748b] mb-4">Track spending patterns over time</p>
-        <div className="mt-4 h-72 w-full">
+        <div className="mt-4 h-56 md:h-72 w-full">
           <Line data={lineData} options={lineOptions} />
         </div>
       </article>
@@ -169,7 +169,7 @@ export default function ChartSection({ transactions }) {
       <article className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5">
         <h3 className="text-[13px] font-semibold text-[#f1f5f9] mb-0.5">Expense Categories</h3>
         <p className="text-[12px] text-[#64748b] mb-4">Distribution of expenses by category</p>
-        <div className="mt-4 h-72 w-full">
+        <div className="mt-4 h-56 md:h-72 w-full">
           <Pie data={pieData} options={pieOptions} />
         </div>
       </article>

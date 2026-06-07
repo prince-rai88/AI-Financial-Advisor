@@ -67,7 +67,7 @@ export default function Insights({ onLogout }) {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5">
               <p className="text-[11px] uppercase tracking-[1px] text-[#64748b] font-medium mb-3">
                 Savings rate
@@ -154,7 +154,7 @@ export default function Insights({ onLogout }) {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
             <div className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5">
               <p className="text-[13px] font-semibold text-[#f1f5f9] mb-1">Budget prediction</p>
               <p className="text-[12px] text-[#64748b] mb-4">

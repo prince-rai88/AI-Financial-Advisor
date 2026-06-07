@@ -62,7 +62,7 @@ function Login({ onLoginSuccess }) {
           </span>
         </div>
 
-        <div className="w-full max-w-[420px] rounded-2xl p-[1px] bg-[linear-gradient(to_right,#6c63ff,#10b981)]">
+        <div className="w-full max-w-[420px] px-4 rounded-2xl p-[1px] bg-[linear-gradient(to_right,#6c63ff,#10b981)]">
           <div className="bg-[#161b27] rounded-2xl p-8">
             <h2 className="text-[18px] font-semibold text-[#f1f5f9] mb-1">Welcome back</h2>
             <p className="text-[13px] text-[#64748b] mb-6">Sign in to your account</p>

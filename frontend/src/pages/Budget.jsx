@@ -101,7 +101,7 @@ export default function Budget({ onLogout }) {
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
           { label: "Total income", value: summary.total_income, color: "#10b981" },
           { label: "Total expenses", value: summary.total_expense, color: "#f43f5e" },

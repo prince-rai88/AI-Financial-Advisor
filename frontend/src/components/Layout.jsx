@@ -1,5 +1,5 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-
 const NAV_ITEMS = [
   {
     label: "Dashboard",
@@ -56,6 +56,7 @@ const PROFILE_ITEM = {
 
 export default function Layout({ title, rightSlot, children, onLogout }) {
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const isActive = (hash, path) => {
     if (path) return location.pathname.startsWith(path);
@@ -70,7 +71,13 @@ export default function Layout({ title, rightSlot, children, onLogout }) {
 
   return (
     <div className="min-h-screen bg-[#0d0f14] flex">
-      <aside className="w-[220px] flex-shrink-0 bg-[#0f1117] border-r border-white/5 flex flex-col py-6 px-4">
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/60 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-[220px] transform transition-transform duration-200 lg:translate-x-0 bg-[#0f1117] border-r border-white/5 flex flex-col py-6 px-4 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex items-center gap-2 px-2 mb-8">
           <div className="w-7 h-7 rounded-lg bg-[#6c63ff] flex items-center justify-center text-white text-[11px] font-bold">
             F
@@ -86,6 +93,7 @@ export default function Layout({ title, rightSlot, children, onLogout }) {
               key={item.label}
               to={item.path || "/dashboard"}
               className={`${baseItem} ${isActive(item.hash, item.path) ? activeItem : ""}`}
+              onClick={() => setSidebarOpen(false)}
             >
               {item.icon}
               {item.label}
@@ -97,6 +105,7 @@ export default function Layout({ title, rightSlot, children, onLogout }) {
           <Link
             to="/dashboard#profile"
             className={`${baseItem} ${isActive(PROFILE_ITEM.hash) ? activeItem : ""}`}
+            onClick={() => setSidebarOpen(false)}
           >
             {PROFILE_ITEM.icon}
             {PROFILE_ITEM.label}
@@ -104,9 +113,21 @@ export default function Layout({ title, rightSlot, children, onLogout }) {
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col min-h-screen overflow-auto">
+      <main className="flex-1 lg:ml-[220px] flex flex-col min-h-screen overflow-auto">
         <header className="flex items-center justify-between px-8 py-5 border-b border-white/5">
-          <h1 className="text-[18px] font-semibold text-[#f1f5f9]">{title}</h1>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="lg:hidden flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-[#64748b] hover:text-[#f1f5f9]"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+            <h1 className="text-[18px] font-semibold text-[#f1f5f9]">{title}</h1>
+          </div>
           <div className="flex items-center gap-3">
             <span className="text-[12px] text-[#64748b] bg-white/5 px-3 py-1.5 rounded-lg">
               {new Date().toLocaleDateString("en-IN", {

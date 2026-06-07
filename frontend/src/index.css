@@ -53,3 +53,18 @@ textarea:focus {
   background: rgba(108, 99, 255, 0.3);
   color: #f1f5f9;
 }
+
+/* Minimum touch target size */
+button, a, input, select {
+  min-height: 44px;
+}
+
+/* Prevent text size adjustment on iOS */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Smooth scrolling */
+* {
+  -webkit-overflow-scrolling: touch;
+}

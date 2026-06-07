@@ -236,7 +236,7 @@ export default function Dashboard({ onLogout }) {
           </div>
         ) : null}
 
-        <div className="grid grid-cols-3 gap-4 mb-6" id="budget">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6" id="budget">
           <div className="bg-[#161b27] border border-white/[0.07] border-t-2 border-t-[#10b981] rounded-2xl p-5">
             <div className="flex justify-between items-start">
               <div>
@@ -299,7 +299,7 @@ export default function Dashboard({ onLogout }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5">
             <p className="text-[13px] font-semibold text-[#f1f5f9] mb-4">Spending by category</p>
             {categoryTotals.length ? (
