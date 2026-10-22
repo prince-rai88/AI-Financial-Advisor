@@ -52,12 +52,15 @@ function App() {
 
   const isAuth = useMemo(() => isTokenValid(token) || isGuest, [token, isGuest]);
 
-  const handleLoginSuccess = ({ access, refresh }) => {
+  const handleLoginSuccess = ({ access, refresh, username }) => {
     setGuestMode(false);
     setIsGuest(false);
     localStorage.setItem(ACCESS_TOKEN_KEY, access);
     if (refresh) {
       localStorage.setItem(REFRESH_TOKEN_KEY, refresh);
+    }
+    if (username) {
+      localStorage.setItem("username", username);
     }
     setToken(access);
   };
@@ -67,6 +70,7 @@ function App() {
     setToken(null);
     setGuestMode(true);
     setIsGuest(true);
+    localStorage.setItem("username", "Guest");
   };
 
   const handleLogout = () => {

@@ -43,6 +43,7 @@ export default function Login({ onLoginSuccess, onGuestLogin }) {
       onLoginSuccess({
         access: accessToken,
         refresh: response.data?.refresh,
+        username: form.username.trim(),
       });
 
       notify("Welcome back to FinAI", "success");

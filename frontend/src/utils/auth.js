@@ -47,6 +47,7 @@ export function clearAuthStorage() {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem(GUEST_MODE_KEY);
+  localStorage.removeItem("username");
 }
 
 export function getAccessToken() {

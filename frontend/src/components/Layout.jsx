@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { authApi } from "../api";
 import { isGuestMode } from "../utils/auth";
 
 const NAV_ITEMS = [
@@ -62,6 +63,36 @@ export default function Layout({ title, rightSlot, children, onLogout }) {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const guest = isGuestMode();
+  const [username, setUsername] = useState(() => {
+    if (isGuestMode()) return "Guest";
+    return localStorage.getItem("username") || "";
+  });
+
+  useEffect(() => {
+    let active = true;
+    authApi
+      .fetchUser()
+      .then((res) => {
+        if (!active) return;
+        const name =
+          res.data?.username ||
+          res.data?.first_name ||
+          (isGuestMode() ? "Guest" : "User");
+        setUsername(name);
+        if (!isGuestMode() && res.data?.username) {
+          localStorage.setItem("username", res.data.username);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const userInitial = useMemo(() => {
+    const raw = (username || (guest ? "Guest" : "User")).trim();
+    return raw ? raw[0].toUpperCase() : guest ? "G" : "U";
+  }, [username, guest]);
 
   const isActive = (hash, path) => {
     if (path) return location.pathname.startsWith(path);
@@ -228,17 +259,18 @@ export default function Layout({ title, rightSlot, children, onLogout }) {
               <span>{guest ? "Exit Demo" : "Sign Out"}</span>
             </button>
 
-            {/* Avatar Pill */}
-            <div
-              title={guest ? "Guest Demo Explorer" : "User Profile"}
-              className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-mono font-semibold ${
+            {/* User Initial Circle */}
+            <Link
+              to="/dashboard#profile"
+              title={username ? `Signed in as ${username}` : guest ? "Guest Explorer" : "User Profile"}
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono font-semibold shadow-sm transition-transform hover:scale-105 active:scale-95 cursor-pointer ${
                 guest
-                  ? "bg-amber-500/15 border border-amber-500/30 text-amber-400"
-                  : "bg-white/[0.08] border border-white/[0.15] text-white"
+                  ? "bg-amber-500/15 border border-amber-500/35 text-amber-400 hover:border-amber-500/50"
+                  : "bg-[#00e599]/15 border border-[#00e599]/35 text-[#00e599] hover:border-[#00e599]/50"
               }`}
             >
-              {guest ? "G" : "U"}
-            </div>
+              {userInitial}
+            </Link>
           </div>
         </header>
 
