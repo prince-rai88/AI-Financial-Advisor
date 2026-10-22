@@ -443,10 +443,19 @@ export default function AppleTitaniumCard3D({
       const w = container.clientWidth;
       const h = container.clientHeight;
       if (w === 0 || h === 0) return;
-      camera.aspect = w / h;
+      const aspect = w / h;
+      camera.aspect = aspect;
+      // On narrow mobile screens (aspect < 1.35), smoothly push camera back so the card is never cropped
+      if (aspect < 1.35) {
+        camera.position.z = 4.8 + (1.35 - aspect) * 2.5;
+      } else {
+        camera.position.z = 4.8;
+      }
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     };
+
+    handleResize();
 
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
@@ -516,7 +525,7 @@ export default function AppleTitaniumCard3D({
   return (
     <div
       ref={mountRef}
-      className={`relative w-full h-full flex items-center justify-center select-none overflow-hidden ${className}`}
+      className={`relative w-full h-full flex items-center justify-center select-none overflow-hidden touch-pan-y ${className}`}
       aria-label="Interactive 3D Apple Titanium FinAI Smart Card"
     />
   );
