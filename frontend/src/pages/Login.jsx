@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { authApi } from "../api";
 import { notify } from "../utils/toast";
 
-const FinAiCore3D = lazy(() => import("../components/3d/FinAiCore3D"));
+const AppleTitaniumCard3D = lazy(() => import("../components/3d/AppleTitaniumCard3D"));
 
 export default function Login({ onLoginSuccess, onGuestLogin }) {
   const navigate = useNavigate();
@@ -101,7 +101,7 @@ export default function Login({ onLoginSuccess, onGuestLogin }) {
             predictive velocity forecasting—engineered with uncompromising aesthetic discipline.
           </p>
 
-          {/* Interactive 3D WebGL Canvas */}
+          {/* Interactive 3D Apple Titanium Card WebGL Canvas */}
           <div className="w-full h-72 sm:h-80 relative rounded-3xl overflow-hidden apple-card-subtle p-2 mb-6 group cursor-grab active:cursor-grabbing">
             <Suspense
               fallback={
@@ -110,13 +110,13 @@ export default function Login({ onLoginSuccess, onGuestLogin }) {
                 </div>
               }
             >
-              <FinAiCore3D variant="hero" interactive={true} />
+              <AppleTitaniumCard3D holderName={form.username.trim() || "GUEST EXPLORER"} />
             </Suspense>
 
             {/* Micro 3D Interaction Tip */}
             <div className="absolute bottom-3 inset-x-0 flex items-center justify-center pointer-events-none">
               <span className="text-[10px] font-mono tracking-widest uppercase px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/50">
-                Move pointer to tilt 3D optical core
+                Move pointer to tilt 3D physical titanium card
               </span>
             </div>
           </div>

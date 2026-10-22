@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Chart as ChartJS } from "chart.js";
 import { motion } from "framer-motion";
 import { authApi, financeApi } from "../api";
@@ -9,8 +9,6 @@ import TransactionTable from "../components/TransactionTable";
 import UploadSection from "../components/UploadSection";
 import { notify } from "../utils/toast";
 import { formatINR } from "../utils/currency";
-
-const FinAiCore3D = lazy(() => import("../components/3d/FinAiCore3D"));
 
 ChartJS.defaults.color = "rgba(255, 255, 255, 0.4)";
 ChartJS.defaults.borderColor = "rgba(255, 255, 255, 0.05)";
@@ -313,22 +311,13 @@ export default function Dashboard({ onLogout }) {
                 </span>
               </div>
 
-              {/* Real 3D Interactive Telemetry Core */}
-              <div className="w-full h-36 rounded-2xl bg-black/30 border border-white/[0.06] overflow-hidden relative mb-4 group cursor-grab active:cursor-grabbing">
-                <Suspense
-                  fallback={
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="w-6 h-6 border-2 border-emerald-500/20 border-t-[#00e599] rounded-full animate-spin" />
-                    </div>
-                  }
-                >
-                  <FinAiCore3D variant="compact" interactive={true} />
-                </Suspense>
-                <div className="absolute bottom-2 left-3 pointer-events-none">
-                  <span className="text-[9px] font-mono uppercase tracking-wider text-white/40">
-                    Live 3D Telemetry · Drag to rotate
-                  </span>
+              {/* Telemetry Status Bar */}
+              <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#00e599]" />
+                  <span className="text-xs text-white/70 font-mono">Ledger Health</span>
                 </div>
+                <span className="text-[11px] font-mono text-[#00e599] font-medium">Calibrated & Active</span>
               </div>
 
               {insightsData.recommendation ? (
