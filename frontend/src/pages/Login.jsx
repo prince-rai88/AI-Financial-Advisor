@@ -142,6 +142,15 @@ function Login({ onLoginSuccess, onGuestLogin }) {
             Create one
           </Link>
         </p>
+
+        <div className="text-center mt-4">
+          <Link
+            to="/"
+            className="text-[12px] text-white/40 hover:text-white/80 transition-colors inline-flex items-center gap-1"
+          >
+            ← Return to FinAI Overview
+          </Link>
+        </div>
       </div>
     </div>
   );
