@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { authApi } from "../api";
 import { notify } from "../utils/toast";
 
@@ -51,10 +52,18 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-[#07090e] text-[#f8fafc] flex flex-col justify-center items-center p-6 relative overflow-hidden selection:bg-[#00e599]/30 selection:text-white">
-      {/* Ambient background studio glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-[#00e599]/10 via-[#38bdf8]/5 to-transparent blur-[120px] pointer-events-none rounded-full" />
+      {/* Background ambient light fields */}
+      <div className="ambient-light-field">
+        <div className="ambient-light-orb-1" />
+        <div className="ambient-light-orb-2" />
+      </div>
 
-      <div className="w-full max-w-[440px] relative z-10">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-[440px] relative z-10"
+      >
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-8 text-center">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-b from-white/15 to-white/5 border border-white/20 shadow-xl flex items-center justify-center mb-3">
@@ -69,7 +78,9 @@ export default function Register() {
         </div>
 
         {/* Apple-style Frosted Glass Card */}
-        <div className="apple-card p-7 sm:p-8 backdrop-blur-2xl">
+        <div className="apple-card p-7 sm:p-8 backdrop-blur-3xl relative overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#00e599]/40 to-transparent" />
+
           <div className="mb-6">
             <h2 className="text-base font-medium text-white tracking-tight">Create Account</h2>
             <p className="text-xs text-white/50 mt-0.5">
@@ -183,7 +194,7 @@ export default function Register() {
             Sign in
           </Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }

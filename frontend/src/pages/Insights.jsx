@@ -102,6 +102,7 @@ export default function Insights({ onLogout }) {
             <StatCard
               label="30-Day Budget Target"
               value={formatINR(budget.predicted_budget)}
+              numericValue={budget.predicted_budget}
               helper="Algorithmic run-rate limit"
               tone="positive"
             />

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import { authApi } from "../api";
 import { isGuestMode } from "../utils/auth";
 
@@ -107,7 +108,13 @@ export default function Layout({ title, rightSlot, children, onLogout }) {
     "bg-white/[0.08] text-white font-medium border border-white/[0.1] shadow-sm";
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-[#f8fafc] flex antialiased selection:bg-[#00e599]/30 selection:text-white">
+    <div className="min-h-screen bg-[#07090e] text-[#f8fafc] flex antialiased selection:bg-[#00e599]/30 selection:text-white relative overflow-hidden">
+      {/* Background ambient light fields shining through glass surfaces */}
+      <div className="ambient-light-field">
+        <div className="ambient-light-orb-1" />
+        <div className="ambient-light-orb-2" />
+      </div>
+
       {/* Mobile Backdrop overlay */}
       {sidebarOpen && (
         <div
@@ -274,8 +281,16 @@ export default function Layout({ title, rightSlot, children, onLogout }) {
           </div>
         </header>
 
-        {/* Content Body */}
-        <div className="flex-1 p-6 lg:p-8 max-w-7xl w-full mx-auto">{children}</div>
+        {/* Animated Content Body */}
+        <motion.div
+          key={location.pathname}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="flex-1 p-6 lg:p-8 max-w-7xl w-full mx-auto relative z-10"
+        >
+          {children}
+        </motion.div>
       </main>
     </div>
   );

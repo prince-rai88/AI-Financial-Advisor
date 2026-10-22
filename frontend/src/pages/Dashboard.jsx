@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Chart as ChartJS } from "chart.js";
+import { motion } from "framer-motion";
 import { authApi, financeApi } from "../api";
 import ChartSection from "../components/ChartSection";
 import Layout from "../components/Layout";
@@ -8,6 +9,8 @@ import TransactionTable from "../components/TransactionTable";
 import UploadSection from "../components/UploadSection";
 import { notify } from "../utils/toast";
 import { formatINR } from "../utils/currency";
+
+const FinAiCore3D = lazy(() => import("../components/3d/FinAiCore3D"));
 
 ChartJS.defaults.color = "rgba(255, 255, 255, 0.4)";
 ChartJS.defaults.borderColor = "rgba(255, 255, 255, 0.05)";
@@ -179,7 +182,12 @@ export default function Dashboard({ onLogout }) {
         </div>
       )}
 
-      <div className="space-y-6">
+      <motion.div
+        className="space-y-6"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      >
         {error ? (
           <div className="p-4 rounded-2xl bg-[#f43f5e]/10 border border-[#f43f5e]/25 text-xs text-[#f43f5e] flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-[#f43f5e]" />
@@ -188,12 +196,13 @@ export default function Dashboard({ onLogout }) {
         ) : null}
 
         {/* ───────────────────────────────────────────────────────────── */}
-        {/* 1. PRIMARY METRIC STAT CARDS                                  */}
+        {/* 1. PRIMARY METRIC STAT CARDS WITH 3D TILT & COUNTING ANIMATION */}
         {/* ───────────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="budget">
           <StatCard
             label="Total Inflow"
             value={formatINR(summary.total_income)}
+            numericValue={summary.total_income}
             helper="Monthly aggregate credits"
             tone="positive"
             icon={
@@ -206,6 +215,7 @@ export default function Dashboard({ onLogout }) {
           <StatCard
             label="Total Outflow"
             value={formatINR(summary.total_expense)}
+            numericValue={summary.total_expense}
             helper="Monthly aggregate debits"
             tone="negative"
             icon={
@@ -218,6 +228,7 @@ export default function Dashboard({ onLogout }) {
           <StatCard
             label="Net Surplus / Reserve"
             value={formatINR(summary.net_balance)}
+            numericValue={summary.net_balance}
             helper={`Calculated savings rate: ${savingsRate}%`}
             tone="highlight"
             icon={
@@ -291,7 +302,7 @@ export default function Dashboard({ onLogout }) {
           {/* AI Insights & Anomaly Panel */}
           <div className="lg:col-span-5 flex flex-col gap-5" id="insights">
             {/* AI Insights Card */}
-            <div className="apple-card p-6 relative overflow-hidden">
+            <div className="apple-card p-6 relative overflow-hidden bg-gradient-to-br from-white/[0.04] via-transparent to-[#00e599]/[0.03]">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#00e599] animate-pulse" />
@@ -300,6 +311,24 @@ export default function Dashboard({ onLogout }) {
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#00e599]/10 text-[#00e599] border border-[#00e599]/20">
                   Active
                 </span>
+              </div>
+
+              {/* Real 3D Interactive Telemetry Core */}
+              <div className="w-full h-36 rounded-2xl bg-black/30 border border-white/[0.06] overflow-hidden relative mb-4 group cursor-grab active:cursor-grabbing">
+                <Suspense
+                  fallback={
+                    <div className="w-full h-full flex items-center justify-center">
+                      <div className="w-6 h-6 border-2 border-emerald-500/20 border-t-[#00e599] rounded-full animate-spin" />
+                    </div>
+                  }
+                >
+                  <FinAiCore3D variant="compact" interactive={true} />
+                </Suspense>
+                <div className="absolute bottom-2 left-3 pointer-events-none">
+                  <span className="text-[9px] font-mono uppercase tracking-wider text-white/40">
+                    Live 3D Telemetry · Drag to rotate
+                  </span>
+                </div>
               </div>
 
               {insightsData.recommendation ? (
@@ -421,7 +450,7 @@ export default function Dashboard({ onLogout }) {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </Layout>
   );
 }

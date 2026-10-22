@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { financeApi } from "../api";
 import Layout from "../components/Layout";
 import StatCard from "../components/StatCard";
+import AnimatedNumber from "../components/common/AnimatedNumber";
 import { formatINR } from "../utils/currency";
 
 const categoryColors = ["#00e599", "#38bdf8", "#fbbf24", "#a78bfa", "#fb7185", "#34d399"];
@@ -64,9 +65,10 @@ export default function Budget({ onLogout }) {
                 <div className="h-10 w-48 bg-white/5 rounded-xl animate-pulse" />
               ) : (
                 <div className="flex items-baseline gap-3">
-                  <span className="text-4xl sm:text-5xl font-light tracking-tight text-white font-mono tabular-numbers">
-                    {formatINR(budget.predicted_budget)}
-                  </span>
+                  <AnimatedNumber
+                    value={budget.predicted_budget}
+                    className="text-4xl sm:text-5xl font-light tracking-tight text-white font-mono tabular-numbers"
+                  />
                   <span className="text-xs text-white/40 font-mono">/ month</span>
                 </div>
               )}
@@ -145,6 +147,7 @@ export default function Budget({ onLogout }) {
           <StatCard
             label="Total Monthly Income"
             value={formatINR(summary.total_income)}
+            numericValue={summary.total_income}
             helper="Gross recurring deposits"
             tone="positive"
           />
@@ -152,6 +155,7 @@ export default function Budget({ onLogout }) {
           <StatCard
             label="Total Monthly Expenses"
             value={formatINR(summary.total_expense)}
+            numericValue={summary.total_expense}
             helper="Current trailing run-rate"
             tone="negative"
           />
@@ -159,6 +163,7 @@ export default function Budget({ onLogout }) {
           <StatCard
             label="Net Monthly Surplus"
             value={formatINR(summary.net_balance)}
+            numericValue={summary.net_balance}
             helper="Estimated retained surplus"
             tone="highlight"
           />
