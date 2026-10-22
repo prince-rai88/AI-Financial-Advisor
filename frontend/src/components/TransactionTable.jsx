@@ -7,10 +7,6 @@ function formatAmount(value) {
   return formatINR(value, { maximumFractionDigits: 2 });
 }
 
-function txType(amount) {
-  return Number(amount) < 0 ? "Expense" : "Income";
-}
-
 export default function TransactionTable({ transactions, loading }) {
   const [sortBy, setSortBy] = useState("date");
   const [sortDirection, setSortDirection] = useState("desc");
@@ -54,8 +50,11 @@ export default function TransactionTable({ transactions, loading }) {
 
   if (loading) {
     return (
-      <section className="rounded-xl border border-border-subtle bg-bg-surface p-4">
-        <div className="h-24 animate-pulse rounded-xl bg-bg-elevated" />
+      <section className="apple-card p-6">
+        <div className="space-y-3">
+          <div className="h-5 w-32 bg-white/5 rounded-lg animate-pulse" />
+          <div className="h-40 bg-white/[0.02] rounded-xl animate-pulse" />
+        </div>
       </section>
     );
   }
@@ -63,51 +62,97 @@ export default function TransactionTable({ transactions, loading }) {
   if (!transactions.length) return null;
 
   return (
-    <section className="rounded-xl border border-border-subtle bg-bg-surface p-4">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-text-primary">Transactions</h3>
-        <div className="flex gap-2">
-          <button className="btn-ghost" type="button" onClick={() => toggleSort("date")}>
-            Sort Date ({sortBy === "date" ? sortDirection : "-"})
+    <section className="apple-card p-6">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-medium text-white tracking-tight">Recent Ledger Activity</h3>
+          <p className="text-xs text-white/40 font-light mt-0.5">
+            Showing {paginated.length} of {sortedTransactions.length} records
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => toggleSort("date")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+              sortBy === "date"
+                ? "bg-white/10 text-white border border-white/15"
+                : "bg-white/[0.03] text-white/50 hover:text-white border border-white/[0.06]"
+            }`}
+          >
+            Date {sortBy === "date" ? (sortDirection === "asc" ? "↑" : "↓") : "↕"}
           </button>
-          <button className="btn-ghost" type="button" onClick={() => toggleSort("amount")}>
-            Sort Amount ({sortBy === "amount" ? sortDirection : "-"})
+          <button
+            type="button"
+            onClick={() => toggleSort("amount")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+              sortBy === "amount"
+                ? "bg-white/10 text-white border border-white/15"
+                : "bg-white/[0.03] text-white/50 hover:text-white border border-white/[0.06]"
+            }`}
+          >
+            Amount {sortBy === "amount" ? (sortDirection === "asc" ? "↑" : "↓") : "↕"}
           </button>
         </div>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full border-separate border-spacing-y-2 text-text-secondary">
+        <table className="w-full text-left text-xs">
           <thead>
-            <tr>
-              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.08em] text-text-muted">Date</th>
-              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.08em] text-text-muted">Type</th>
-              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.08em] text-text-muted">Description</th>
-              <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-[0.08em] text-text-muted">Amount</th>
+            <tr className="border-b border-white/[0.06] text-[10px] font-mono uppercase tracking-wider text-white/40">
+              <th className="py-2.5 px-3">Date</th>
+              <th className="py-2.5 px-3">Type</th>
+              <th className="py-2.5 px-3">Description</th>
+              <th className="py-2.5 px-3 text-right">Amount</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-white/[0.04]">
             {paginated.map((tx) => {
               const isExpense = Number(tx.amount) < 0;
+              const absAmount = Math.abs(Number(tx.amount));
+              const categoryName =
+                typeof tx.category === "object" && tx.category !== null
+                  ? tx.category.name
+                  : tx.category || "General";
+
               return (
-                <tr key={tx.id} className="rounded-xl bg-bg-elevated/80 transition hover:bg-bg-elevated">
-                  <td className="whitespace-nowrap rounded-l-xl px-3 py-3 text-sm text-text-secondary">{tx.date}</td>
-                  <td className="px-3 py-3 text-sm">
+                <tr
+                  key={tx.id}
+                  className="hover:bg-white/[0.02] transition-colors group"
+                >
+                  <td className="py-3 px-3 font-mono text-white/50 text-[11px] whitespace-nowrap">
+                    {tx.date}
+                  </td>
+                  <td className="py-3 px-3 whitespace-nowrap">
                     <span
-                      className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                        isExpense ? "bg-red/10 text-red" : "bg-green/10 text-green"
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono ${
+                        isExpense
+                          ? "bg-[#fb7185]/10 text-[#fb7185] border border-[#fb7185]/20"
+                          : "bg-[#00e599]/10 text-[#00e599] border border-[#00e599]/20"
                       }`}
                     >
-                      {txType(tx.amount)}
+                      <span
+                        className={`w-1 h-1 rounded-full ${
+                          isExpense ? "bg-[#fb7185]" : "bg-[#00e599]"
+                        }`}
+                      />
+                      {isExpense ? "Expense" : "Income"}
                     </span>
                   </td>
-                  <td className="max-w-[380px] truncate px-3 py-3 text-sm font-medium text-text-primary">{tx.description}</td>
-                  <td
-                    className={`rounded-r-xl px-3 py-3 text-right text-sm font-semibold ${
-                      isExpense ? "text-red" : "text-green"
-                    }`}
-                  >
-                    {formatAmount(tx.amount)}
+                  <td className="py-3 px-3">
+                    <div className="font-medium text-white/90 group-hover:text-white transition-colors">
+                      {tx.description}
+                    </div>
+                    <div className="text-[10px] text-white/40 mt-0.5 font-light">
+                      {categoryName}
+                    </div>
+                  </td>
+                  <td className="py-3 px-3 text-right font-mono tabular-numbers text-[13px] font-medium whitespace-nowrap">
+                    <span className={isExpense ? "text-[#fb7185]" : "text-[#00e599]"}>
+                      {isExpense ? "−" : "+"}
+                      {formatAmount(absAmount)}
+                    </span>
                   </td>
                 </tr>
               );
@@ -116,29 +161,30 @@ export default function TransactionTable({ transactions, loading }) {
         </table>
       </div>
 
-      <div className="mt-4 flex items-center justify-between">
-        <p className="text-sm text-text-muted">
-          Page {currentPage} of {totalPages}
-        </p>
-        <div className="flex gap-2">
-          <button
-            className="btn-ghost"
-            type="button"
-            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </button>
-          <button
-            className="btn-ghost"
-            type="button"
-            onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </button>
+      {/* Pagination Footer */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-white/[0.06] pt-4 mt-4 text-xs font-mono text-white/40">
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed text-white transition-colors"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed text-white transition-colors"
+            >
+              Next
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

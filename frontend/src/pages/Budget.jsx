@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { financeApi } from "../api";
 import Layout from "../components/Layout";
+import StatCard from "../components/StatCard";
+import { formatINR } from "../utils/currency";
+
+const categoryColors = ["#00e599", "#38bdf8", "#fbbf24", "#a78bfa", "#fb7185", "#34d399"];
 
 export default function Budget({ onLogout }) {
   const [budget, setBudget] = useState({ predicted_budget: 0, confidence_note: "" });
@@ -36,86 +40,129 @@ export default function Budget({ onLogout }) {
     };
   }, []);
 
+  const totalCategorySpend = Object.values(summary.category_breakdown).reduce(
+    (s, v) => s + v,
+    0
+  );
+
   return (
-    <Layout title="Budget" onLogout={onLogout}>
-      <div className="bg-[#161b27] border border-white/[0.07] border-t-2 border-t-[#6c63ff] rounded-2xl p-6 mb-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-[11px] uppercase tracking-[1px] text-[#64748b] font-medium mb-2">
-              Predicted monthly budget
-            </p>
-            {loading ? (
-              <div className="h-10 w-40 bg-white/5 rounded-xl animate-pulse" />
-            ) : (
-              <p className="text-[40px] font-bold text-[#6c63ff] leading-none">
-                ₹{Number(budget.predicted_budget).toLocaleString("en-IN")}
+    <Layout title="Budget & Forecast" onLogout={onLogout}>
+      <div className="space-y-6">
+        {/* ───────────────────────────────────────────────────────────── */}
+        {/* 1. HERO PREDICTED MONTHLY BUDGET CARD                         */}
+        {/* ───────────────────────────────────────────────────────────── */}
+        <div className="apple-card p-6 sm:p-8 border-t-2 border-t-[#00e599]/60 bg-gradient-to-br from-white/[0.04] via-transparent to-[#00e599]/[0.03]">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+            <div>
+              <span className="text-[11px] font-mono uppercase tracking-widest text-[#00e599] block mb-2">
+                Predictive AI Forecast
+              </span>
+              <p className="text-xs text-white/50 font-light mb-3">
+                Estimated capital allocation for next 30 days
               </p>
-            )}
-            <p className="text-[12px] text-[#64748b] mt-2">
-              Estimated spend for next 30 days
-            </p>
-          </div>
-          <div className="bg-[#6c63ff]/10 border border-[#6c63ff]/20 rounded-2xl px-4 py-3 text-right">
-            <p className="text-[11px] text-[#64748b] mb-1">Confidence</p>
-            <p className="text-[12px] text-[#f1f5f9] font-medium max-w-[200px]">
-              {budget.confidence_note || "—"}
-            </p>
+              {loading ? (
+                <div className="h-10 w-48 bg-white/5 rounded-xl animate-pulse" />
+              ) : (
+                <div className="flex items-baseline gap-3">
+                  <span className="text-4xl sm:text-5xl font-light tracking-tight text-white font-mono tabular-numbers">
+                    {formatINR(budget.predicted_budget)}
+                  </span>
+                  <span className="text-xs text-white/40 font-mono">/ month</span>
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] text-right self-start">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-white/40 block mb-1">
+                Model Confidence
+              </span>
+              <p className="text-xs text-white/90 font-medium max-w-[220px]">
+                {budget.confidence_note || "Deterministic Velocity Calibration"}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5 mb-6">
-        <p className="text-[13px] font-semibold text-[#f1f5f9] mb-4">
-          Expense breakdown by category
-        </p>
-        {Object.keys(summary.category_breakdown).length ? (
-          Object.entries(summary.category_breakdown)
-            .sort((a, b) => b[1] - a[1])
-            .map(([cat, amt]) => {
-              const total = Object.values(summary.category_breakdown).reduce((s, v) => s + v, 0);
-              const pct = total > 0 ? (amt / total) * 100 : 0;
-              return (
-                <div key={cat} className="flex items-center gap-3 mb-3">
-                  <span className="text-[12px] text-[#64748b] w-28 flex-shrink-0">
-                    {cat}
-                  </span>
-                  <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-[#6c63ff] transition-all duration-700"
-                      style={{ width: `${pct.toFixed(1)}%` }}
-                    />
-                  </div>
-                  <span className="text-[12px] text-[#64748b] w-8 text-right flex-shrink-0">
-                    {pct.toFixed(0)}%
-                  </span>
-                  <span className="text-[12px] font-medium text-[#f1f5f9] w-24 text-right flex-shrink-0">
-                    ₹{Number(amt).toLocaleString("en-IN")}
-                  </span>
-                </div>
-              );
-            })
-        ) : (
-          <p className="text-[12px] text-[#64748b] py-4 text-center">
-            Upload transactions to see category breakdown
-          </p>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {[
-          { label: "Total income", value: summary.total_income, color: "#10b981" },
-          { label: "Total expenses", value: summary.total_expense, color: "#f43f5e" },
-          { label: "Net balance", value: summary.net_balance, color: "#f1f5f9" },
-        ].map((stat) => (
-          <div key={stat.label} className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5">
-            <p className="text-[11px] uppercase tracking-[1px] text-[#64748b] font-medium mb-3">
-              {stat.label}
-            </p>
-            <p className="text-[22px] font-bold leading-none" style={{ color: stat.color }}>
-              ₹{Number(stat.value || 0).toLocaleString("en-IN")}
-            </p>
+        {/* ───────────────────────────────────────────────────────────── */}
+        {/* 2. CATEGORY ALLOCATION PROGRESS BARS                          */}
+        {/* ───────────────────────────────────────────────────────────── */}
+        <div className="apple-card p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-medium text-white tracking-tight">Category Limits & Velocity</h3>
+              <p className="text-xs text-white/40 font-light mt-0.5">Calculated from historical transaction weights</p>
+            </div>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-white/40">
+              Distribution
+            </span>
           </div>
-        ))}
+
+          {Object.keys(summary.category_breakdown).length ? (
+            <div className="space-y-4 pt-2">
+              {Object.entries(summary.category_breakdown)
+                .sort((a, b) => b[1] - a[1])
+                .map(([cat, amt], idx) => {
+                  const pct = totalCategorySpend > 0 ? (amt / totalCategorySpend) * 100 : 0;
+                  const barColor = categoryColors[idx % categoryColors.length];
+
+                  return (
+                    <div key={cat} className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-white/80 font-medium">{cat}</span>
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono text-[11px] text-white/40">
+                            {pct.toFixed(0)}%
+                          </span>
+                          <span className="font-mono tabular-numbers text-white/80 font-medium">
+                            {formatINR(amt)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-700 ease-out"
+                          style={{
+                            width: `${pct.toFixed(1)}%`,
+                            backgroundColor: barColor,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          ) : (
+            <div className="py-12 text-center text-xs text-white/40 font-light">
+              Upload transactions to generate category spending limits.
+            </div>
+          )}
+        </div>
+
+        {/* ───────────────────────────────────────────────────────────── */}
+        {/* 3. CASH-FLOW BASELINE RECAP STATS                             */}
+        {/* ───────────────────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <StatCard
+            label="Total Monthly Income"
+            value={formatINR(summary.total_income)}
+            helper="Gross recurring deposits"
+            tone="positive"
+          />
+
+          <StatCard
+            label="Total Monthly Expenses"
+            value={formatINR(summary.total_expense)}
+            helper="Current trailing run-rate"
+            tone="negative"
+          />
+
+          <StatCard
+            label="Net Monthly Surplus"
+            value={formatINR(summary.net_balance)}
+            helper="Estimated retained surplus"
+            tone="highlight"
+          />
+        </div>
       </div>
     </Layout>
   );

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { financeApi } from "../api";
 import Layout from "../components/Layout";
 import ChartSection from "../components/ChartSection";
+import StatCard from "../components/StatCard";
+import { formatINR } from "../utils/currency";
 
 export default function Insights({ onLogout }) {
   const [insights, setInsights] = useState({
@@ -38,7 +40,7 @@ export default function Insights({ onLogout }) {
       });
       setTransactions(Array.isArray(tRes.data) ? tRes.data : []);
     } catch {
-      setError("Failed to load insights.");
+      setError("Failed to load insights. Please refresh.");
     } finally {
       setLoading(false);
     }
@@ -49,9 +51,9 @@ export default function Insights({ onLogout }) {
   }, [loadInsights]);
 
   return (
-    <Layout title="Insights" onLogout={onLogout}>
+    <Layout title="AI Financial Intelligence" onLogout={onLogout}>
       {error && (
-        <div className="mb-4 bg-[#f43f5e]/10 border border-[#f43f5e]/20 rounded-xl px-4 py-3 text-[13px] text-[#f43f5e]">
+        <div className="mb-5 p-3.5 rounded-2xl bg-[#f43f5e]/10 border border-[#f43f5e]/25 text-xs text-[#f43f5e]">
           {error}
         </div>
       )}
@@ -61,182 +63,165 @@ export default function Insights({ onLogout }) {
           {[...Array(4)].map((_, i) => (
             <div
               key={i}
-              className="h-28 bg-[#161b27] border border-white/[0.07] rounded-2xl animate-pulse"
+              className="h-28 apple-card animate-pulse"
             />
           ))}
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5">
-              <p className="text-[11px] uppercase tracking-[1px] text-[#64748b] font-medium mb-3">
-                Savings rate
-              </p>
-              <p
-                className={`text-[28px] font-bold leading-none mb-2 ${
-                  insights.savings_rate >= 20
-                    ? "text-[#10b981]"
-                    : insights.savings_rate >= 10
-                      ? "text-[#fbbf24]"
-                      : "text-[#f43f5e]"
-                }`}
-              >
-                {Number(insights.savings_rate).toFixed(1)}%
-              </p>
-              <p className="text-[11px] text-[#64748b]">
-                {insights.savings_rate >= 20
-                  ? "Great — keep it up"
+        <div className="space-y-6">
+          {/* ───────────────────────────────────────────────────────────── */}
+          {/* 1. TOP METRIC CHIPS                                           */}
+          {/* ───────────────────────────────────────────────────────────── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              label="Savings Velocity"
+              value={`${Number(insights.savings_rate).toFixed(1)}%`}
+              helper={
+                insights.savings_rate >= 20
+                  ? "Optimal surplus rate"
                   : insights.savings_rate >= 10
-                    ? "Room for improvement"
-                    : "Below recommended 20%"}
-              </p>
-            </div>
+                  ? "Moderate savings"
+                  : "Below target reserve"
+              }
+              tone={
+                insights.savings_rate >= 20
+                  ? "positive"
+                  : insights.savings_rate >= 10
+                  ? "highlight"
+                  : "negative"
+              }
+            />
 
-            <div className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5">
-              <p className="text-[11px] uppercase tracking-[1px] text-[#64748b] font-medium mb-3">
-                Top category
-              </p>
-              <p className="text-[20px] font-bold leading-none text-[#f1f5f9] mb-2 truncate">
-                {insights.highest_spending_category || "—"}
-              </p>
-              <p className="text-[11px] text-[#64748b]">Highest spend area</p>
-            </div>
+            <StatCard
+              label="Peak Outflow Bucket"
+              value={insights.highest_spending_category || "None"}
+              helper="Highest expenditure domain"
+              tone="default"
+            />
 
-            <div className="bg-[#161b27] border border-white/[0.07] border-t-2 border-t-[#6c63ff] rounded-2xl p-5">
-              <p className="text-[11px] uppercase tracking-[1px] text-[#64748b] font-medium mb-3">
-                Predicted budget
-              </p>
-              <p className="text-[22px] font-bold leading-none text-[#6c63ff] mb-2">
-                ₹{Number(budget.predicted_budget).toLocaleString("en-IN")}
-              </p>
-              <p className="text-[11px] text-[#64748b]">Next 30 days</p>
-            </div>
+            <StatCard
+              label="30-Day Budget Target"
+              value={formatINR(budget.predicted_budget)}
+              helper="Algorithmic run-rate limit"
+              tone="positive"
+            />
 
-            <div className="bg-[#161b27] border border-white/[0.07] border-t-2 border-t-[#f43f5e] rounded-2xl p-5">
-              <p className="text-[11px] uppercase tracking-[1px] text-[#64748b] font-medium mb-3">
-                Anomalies
-              </p>
-              <p className="text-[28px] font-bold leading-none text-[#f43f5e] mb-2">
-                {insights.unusual_transactions.length}
-              </p>
-              <p className="text-[11px] text-[#64748b]">Unusual transactions</p>
-            </div>
+            <StatCard
+              label="Flagged Outliers"
+              value={insights.unusual_transactions.length}
+              helper="IsolationForest anomalies"
+              tone={insights.unusual_transactions.length > 0 ? "negative" : "positive"}
+            />
           </div>
 
-          {insights.recommendation && (
-            <div className="bg-[#6c63ff]/10 border border-[#6c63ff]/20 rounded-2xl px-5 py-4 mb-6 flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-[#6c63ff]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#6c63ff"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 8v4M12 16h.01" />
-                </svg>
+          {/* ───────────────────────────────────────────────────────────── */}
+          {/* 2. APPLE INTELLIGENCE SYNTHESIS CARD                          */}
+          {/* ───────────────────────────────────────────────────────────── */}
+          {insights.recommendation ? (
+            <div className="apple-card p-6 relative overflow-hidden bg-gradient-to-r from-white/[0.04] via-white/[0.02] to-[#00e599]/[0.05] border-t-2 border-t-[#00e599]/40">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#00e599] animate-pulse" />
+                  <span className="text-[11px] font-mono uppercase tracking-widest text-[#00e599]">
+                    Synthesis & Advisory
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-white/40">
+                  Confidence: {budget.confidence_note ? "Calibrated" : "Active"}
+                </span>
               </div>
+              <p className="text-sm sm:text-base text-white/90 leading-relaxed font-light">
+                "{insights.recommendation}"
+              </p>
+            </div>
+          ) : null}
+
+          {/* ───────────────────────────────────────────────────────────── */}
+          {/* 3. CHARTS VISUALIZATION                                       */}
+          {/* ───────────────────────────────────────────────────────────── */}
+          {transactions.length > 0 && <ChartSection transactions={transactions} />}
+
+          {/* ───────────────────────────────────────────────────────────── */}
+          {/* 4. BUDGET PREDICTION & ANOMALIES SPLIT                        */}
+          {/* ───────────────────────────────────────────────────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Projected Run-Rate */}
+            <div className="apple-card p-6 flex flex-col justify-between">
               <div>
-                <p className="text-[13px] font-semibold text-[#f1f5f9] mb-1">AI recommendation</p>
-                <p className="text-[13px] text-[#94a3b8] leading-relaxed">
-                  {insights.recommendation}
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-white tracking-tight">Algorithmic Forecast</h3>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.04] text-white/50 border border-white/[0.08]">
+                    Regression Model
+                  </span>
+                </div>
+                <p className="text-xs text-white/40 font-light mb-4">
+                  Estimated 30-day requirement derived from trailing transaction patterns
                 </p>
+
+                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06] mb-4">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-white/40 block mb-1">
+                    Monthly Target
+                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-light tracking-tight font-mono tabular-numbers text-[#00e599]">
+                      {formatINR(budget.predicted_budget)}
+                    </span>
+                    <span className="text-xs text-white/40 font-mono">/ 30 days</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
 
-          {transactions.length > 0 && (
-            <div className="mb-6">
-              <ChartSection transactions={transactions} />
+              {budget.confidence_note && (
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-white/[0.02] border border-white/[0.05] text-xs text-white/60 font-light">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00e599" strokeWidth="2" className="flex-shrink-0 mt-0.5">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                  </svg>
+                  <span>{budget.confidence_note}</span>
+                </div>
+              )}
             </div>
-          )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-            <div className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5">
-              <p className="text-[13px] font-semibold text-[#f1f5f9] mb-1">Budget prediction</p>
-              <p className="text-[12px] text-[#64748b] mb-4">
-                Based on last 3 months of expenses
+            {/* Anomaly Outliers Table */}
+            <div className="apple-card p-6">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium text-white tracking-tight">Outlier Watchdog</h3>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#fb7185]/10 text-[#fb7185] border border-[#fb7185]/20">
+                  {insights.unusual_transactions.length} Flagged
+                </span>
+              </div>
+              <p className="text-xs text-white/40 font-light mb-4">
+                Statistically irregular expenditures requiring review
               </p>
-              <div className="flex items-end gap-3 mb-3">
-                <p className="text-[32px] font-bold text-[#6c63ff] leading-none">
-                  ₹{Number(budget.predicted_budget).toLocaleString("en-IN")}
-                </p>
-                <p className="text-[12px] text-[#64748b] pb-1">/ month</p>
-              </div>
-              <div className="flex items-center gap-2 bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2">
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#fbbf24"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 8v4M12 16h.01" />
-                </svg>
-                <p className="text-[11px] text-[#64748b]">
-                  {budget.confidence_note || "No confidence data"}
-                </p>
-              </div>
-            </div>
 
-            <div className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5">
-              <p className="text-[13px] font-semibold text-[#f1f5f9] mb-4">
-                Unusual transactions
-              </p>
-              {insights.unusual_transactions.length ? (
-                <div className="space-y-1">
-                  {insights.unusual_transactions.map((tx, i) => (
+              {insights.unusual_transactions.length > 0 ? (
+                <div className="space-y-2.5">
+                  {insights.unusual_transactions.map((tx, idx) => (
                     <div
-                      key={tx.id || i}
-                      className="flex items-start justify-between gap-3 bg-white/[0.02] border border-white/[0.04] rounded-xl px-3 py-2.5"
+                      key={tx.id || idx}
+                      className="p-3.5 rounded-xl bg-[#fb7185]/[0.05] border border-[#fb7185]/20 flex items-center justify-between gap-3"
                     >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[12px] text-[#f1f5f9] truncate font-medium">
-                          {tx.description}
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-white/90 truncate">
+                          {tx.description || "Unusual transaction"}
                         </p>
-                        <p className="text-[11px] text-[#64748b] mt-0.5">
-                          {tx.date} · {tx.category}
-                        </p>
-                        <p className="text-[10px] text-[#64748b]/70 mt-0.5 italic">
-                          {tx.reason}
-                        </p>
+                        <p className="text-[10px] font-mono text-white/40 mt-0.5">{tx.date}</p>
                       </div>
-                      <span className="text-[13px] font-bold text-[#f43f5e] flex-shrink-0">
-                        −₹{Math.abs(Number(tx.amount)).toLocaleString("en-IN")}
+                      <span className="text-xs font-mono font-semibold text-[#fb7185] whitespace-nowrap">
+                        −{formatINR(Math.abs(Number(tx.amount || 0)))}
                       </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-8 gap-2">
-                  <div className="w-10 h-10 rounded-2xl bg-[#10b981]/10 flex items-center justify-center">
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#10b981"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  </div>
-                  <p className="text-[13px] font-medium text-[#f1f5f9]">All clear</p>
-                  <p className="text-[12px] text-[#64748b]">
-                    No unusual transactions detected
-                  </p>
+                <div className="py-12 text-center text-xs text-white/40 font-light">
+                  No statistical anomalies or unusual deviations found in current ledger.
                 </div>
               )}
             </div>
           </div>
-        </>
+        </div>
       )}
     </Layout>
   );

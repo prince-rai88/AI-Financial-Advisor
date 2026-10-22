@@ -3,12 +3,14 @@ import { Chart as ChartJS } from "chart.js";
 import { authApi, financeApi } from "../api";
 import ChartSection from "../components/ChartSection";
 import Layout from "../components/Layout";
+import StatCard from "../components/StatCard";
 import TransactionTable from "../components/TransactionTable";
 import UploadSection from "../components/UploadSection";
 import { notify } from "../utils/toast";
+import { formatINR } from "../utils/currency";
 
-ChartJS.defaults.color = "#9ca3af";
-ChartJS.defaults.borderColor = "#1e2130";
+ChartJS.defaults.color = "rgba(255, 255, 255, 0.4)";
+ChartJS.defaults.borderColor = "rgba(255, 255, 255, 0.05)";
 
 function formatDate(value) {
   if (!value) return "Unavailable";
@@ -35,6 +37,7 @@ export default function Dashboard({ onLogout }) {
   const [userDetails, setUserDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
 
   const loadDashboardData = useCallback(async () => {
     try {
@@ -76,20 +79,20 @@ export default function Dashboard({ onLogout }) {
           name: userData.username || "Unavailable",
           email: userData.email || "Unavailable",
           createdAt: userData.date_joined,
-          accountType: userData.accountType || (userData.is_guest ? "Demo Mode (Read-Only)" : "Standard"),
+          accountType: userData.accountType || (userData.is_guest ? "Guest Demo (Read-Only)" : "Standard Member"),
         });
       } catch (fetchError) {
         setUserDetails(null);
         const backendMessage = fetchError?.response?.data?.error || fetchError?.response?.data?.detail;
         const message =
           backendMessage ||
-          "We could not load your profile details right now. Please refresh and try again.";
+          "Could not load profile details right now.";
         notify(message, "error");
       }
     } catch (requestError) {
       const message =
         requestError?.response?.data?.error ||
-        "Failed to load dashboard data. Please refresh or try again.";
+        "Failed to load dashboard data. Please refresh.";
       setError(message);
       notify(message, "error");
     } finally {
@@ -136,276 +139,289 @@ export default function Dashboard({ onLogout }) {
     ...categoryTotals.map(([, amount]) => Math.abs(Number(amount) || 0))
   );
 
-  const incomeChange = Number(0);
-  const expenseChange = Number(0);
-  const budgetData = [];
-
   return (
     <Layout
-      title="Dashboard"
+      title="Financial Overview"
       onLogout={onLogout}
       rightSlot={
-        <label
-          htmlFor="upload-modal"
-          className="flex items-center gap-2 bg-[#6c63ff] hover:bg-[#5a52e0] text-white text-[13px] font-medium px-4 py-2 rounded-xl transition-colors cursor-pointer"
+        <button
+          onClick={() => setUploadModalOpen(true)}
+          className="flex items-center gap-1.5 bg-white hover:bg-white/95 text-black text-xs font-semibold px-3.5 py-1.5 rounded-xl transition-all shadow-[0_2px_12px_rgba(255,255,255,0.15)] cursor-pointer"
         >
-          + Upload CSV
-        </label>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span>Upload CSV</span>
+        </button>
       }
     >
-      <input id="upload-modal" type="checkbox" className="peer hidden" />
-      <div className="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 peer-checked:flex">
-        <div className="w-full max-w-[680px] bg-[#161b27] border border-white/[0.07] rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[13px] font-semibold text-[#f1f5f9]">Upload Statement</p>
-            <label htmlFor="upload-modal" className="text-[12px] text-[#64748b] cursor-pointer">
-              Close
-            </label>
+      {/* Upload Statement Frosted Dialog Modal */}
+      {uploadModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+          <div className="w-full max-w-[620px] bg-[#0c0e14] border border-white/10 rounded-3xl p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/[0.06]">
+              <p className="text-sm font-medium text-white tracking-tight">Statement Ingestion</p>
+              <button
+                onClick={() => setUploadModalOpen(false)}
+                className="w-7 h-7 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-white/60 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+            <UploadSection
+              onUploadSuccess={() => {
+                loadDashboardData();
+                setUploadModalOpen(false);
+              }}
+            />
           </div>
-          <UploadSection onUploadSuccess={loadDashboardData} />
         </div>
-      </div>
+      )}
 
-      <section className="space-y-6">
+      <div className="space-y-6">
         {error ? (
-          <div className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-4 text-[13px] text-[#f43f5e]">
-            {error}
+          <div className="p-4 rounded-2xl bg-[#f43f5e]/10 border border-[#f43f5e]/25 text-xs text-[#f43f5e] flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#f43f5e]" />
+            <span>{error}</span>
           </div>
         ) : null}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6" id="budget">
-          <div className="bg-[#161b27] border border-white/[0.07] border-t-2 border-t-[#10b981] rounded-2xl p-5">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-[11px] uppercase tracking-[1px] text-[#64748b] font-medium mb-3">Total Income</p>
-                <p className="text-[32px] font-bold leading-none tracking-tight text-[#10b981] mb-2">
-                  ₹{Number(summary.total_income || 0).toLocaleString("en-IN")}
-                </p>
-                <p className="text-[12px] text-[#64748b]">
-                  {incomeChange >= 0 ? "+" : ""}
-                  {incomeChange.toFixed(1)}% vs last month
-                </p>
-              </div>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-[#10b981]/10">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 17l6-6 4 4 7-7" />
-                  <path d="M14 8h6v6" />
-                </svg>
-              </div>
-            </div>
-          </div>
+        {/* ───────────────────────────────────────────────────────────── */}
+        {/* 1. PRIMARY METRIC STAT CARDS                                  */}
+        {/* ───────────────────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="budget">
+          <StatCard
+            label="Total Inflow"
+            value={formatINR(summary.total_income)}
+            helper="Monthly aggregate credits"
+            tone="positive"
+            icon={
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 19V5M5 12l7-7 7 7" />
+              </svg>
+            }
+          />
 
-          <div className="bg-[#161b27] border border-white/[0.07] border-t-2 border-t-[#f43f5e] rounded-2xl p-5">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-[11px] uppercase tracking-[1px] text-[#64748b] font-medium mb-3">Total Expense</p>
-                <p className="text-[32px] font-bold leading-none tracking-tight text-[#f43f5e] mb-2">
-                  ₹{Number(summary.total_expense || 0).toLocaleString("en-IN")}
-                </p>
-                <p className="text-[12px] text-[#64748b]">
-                  {expenseChange >= 0 ? "+" : ""}
-                  {expenseChange.toFixed(1)}% vs last month
-                </p>
-              </div>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-[#f43f5e]/10">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 7l6 6 4-4 7 7" />
-                  <path d="M14 16h6v-6" />
-                </svg>
-              </div>
-            </div>
-          </div>
+          <StatCard
+            label="Total Outflow"
+            value={formatINR(summary.total_expense)}
+            helper="Monthly aggregate debits"
+            tone="negative"
+            icon={
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 5v14M5 12l7 7 7-7" />
+              </svg>
+            }
+          />
 
-          <div className="bg-[#161b27] border border-white/[0.07] border-t-2 border-t-[#6c63ff] rounded-2xl p-5">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-[11px] uppercase tracking-[1px] text-[#64748b] font-medium mb-3">Net Balance</p>
-                <p className="text-[32px] font-bold leading-none tracking-tight text-[#f1f5f9] mb-2">
-                  ₹{Number(summary.net_balance || 0).toLocaleString("en-IN")}
-                </p>
-                <p className="text-[12px] text-[#64748b]">Savings rate {savingsRate}%</p>
-              </div>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-[#6c63ff]/10">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6c63ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 7h18v10H3z" />
-                  <path d="M7 7V5h10v2" />
-                  <circle cx="16" cy="12" r="1.5" />
-                </svg>
-              </div>
-            </div>
-          </div>
+          <StatCard
+            label="Net Surplus / Reserve"
+            value={formatINR(summary.net_balance)}
+            helper={`Calculated savings rate: ${savingsRate}%`}
+            tone="highlight"
+            icon={
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="2" y="5" width="20" height="14" rx="2" />
+                <line x1="2" y1="10" x2="22" y2="10" />
+              </svg>
+            }
+          />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5">
-            <p className="text-[13px] font-semibold text-[#f1f5f9] mb-4">Spending by category</p>
+        {/* ───────────────────────────────────────────────────────────── */}
+        {/* 2. CATEGORY BREAKDOWN & AI INTELLIGENCE GRID                  */}
+        {/* ───────────────────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          {/* Category Progress Bars */}
+          <div className="lg:col-span-7 apple-card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-sm font-medium text-white tracking-tight">Spending by Category</h3>
+                <p className="text-xs text-white/40 font-light mt-0.5">Top expenditure vectors</p>
+              </div>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-white/40">
+                Ranked
+              </span>
+            </div>
+
             {categoryTotals.length ? (
-              categoryTotals.map(([category, amount]) => (
-                <div key={category} className="flex items-center gap-3 mb-3">
-                  <span className="text-[12px] text-[#64748b] w-24 flex-shrink-0">{category}</span>
-                  <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-[#6c63ff]"
-                      style={{ width: `${Math.min(100, (Math.abs(amount) / categoryMax) * 100)}%` }}
-                    />
-                  </div>
-                  <span className="text-[12px] text-[#64748b] w-16 text-right">
-                    ₹{Number(amount || 0).toLocaleString("en-IN")}
-                  </span>
-                </div>
-              ))
+              <div className="space-y-4 pt-2">
+                {categoryTotals.map(([category, amount], idx) => {
+                  const colors = ["#00e599", "#38bdf8", "#fbbf24", "#a78bfa", "#fb7185"];
+                  const barColor = colors[idx % colors.length];
+                  const percentage = Math.min(100, (Math.abs(amount) / categoryMax) * 100);
+
+                  return (
+                    <div key={category} className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-white/80 font-medium">{category}</span>
+                        <span className="font-mono tabular-numbers text-white/60">
+                          {formatINR(Math.abs(amount))}
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500 ease-out"
+                          style={{
+                            width: `${percentage}%`,
+                            backgroundColor: barColor,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-10 gap-3">
-                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
-                  <svg viewBox="0 0 24 24" className="h-5 w-5 text-[#64748b]" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M4 19V5" />
-                    <path d="M10 19V9" />
-                    <path d="M16 19V12" />
-                    <path d="M22 19V7" />
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-10 h-10 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-white/40 mb-2">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
                   </svg>
                 </div>
-                <p className="text-[13px] text-[#f1f5f9] font-medium">No data yet</p>
-                <p className="text-[12px] text-[#64748b]">Upload a CSV to see category breakdown</p>
+                <p className="text-xs font-medium text-white/70">No category transactions</p>
+                <p className="text-[11px] text-white/40 mt-0.5">Upload a statement to populate categories</p>
               </div>
             )}
           </div>
 
-          <div className="flex flex-col gap-4" id="insights">
-            <div className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5">
-              <p className="text-[13px] font-semibold text-[#f1f5f9] mb-3">AI Insights</p>
-              {insightsData.recommendation && (
-                <div className="bg-[#6c63ff]/10 border border-[#6c63ff]/20 rounded-xl px-3 py-3 mb-3 flex items-start gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-[#6c63ff]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#6c63ff" strokeWidth="2.5" strokeLinecap="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M12 8v4M12 16h.01" />
-                    </svg>
-                  </div>
-                  <p className="text-[12px] text-[#94a3b8] leading-relaxed">
-                    {insightsData.recommendation}
+          {/* AI Insights & Anomaly Panel */}
+          <div className="lg:col-span-5 flex flex-col gap-5" id="insights">
+            {/* AI Insights Card */}
+            <div className="apple-card p-6 relative overflow-hidden">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#00e599] animate-pulse" />
+                  <h3 className="text-sm font-medium text-white tracking-tight">AI Financial Counsel</h3>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#00e599]/10 text-[#00e599] border border-[#00e599]/20">
+                  Active
+                </span>
+              </div>
+
+              {insightsData.recommendation ? (
+                <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] mb-4">
+                  <p className="text-xs text-white/80 leading-relaxed font-light">
+                    "{insightsData.recommendation}"
                   </p>
                 </div>
-              )}
+              ) : null}
 
-              <div className="flex items-center gap-3 mb-3">
-                <div className="flex-1 bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2.5 text-center">
-                  <p className="text-[10px] text-[#64748b] uppercase tracking-wide mb-1">Savings rate</p>
-                  <p
-                    className={`text-[15px] font-bold ${
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-white/40 block mb-1">
+                    Savings Ratio
+                  </span>
+                  <span
+                    className={`text-base font-semibold font-mono tabular-numbers ${
                       insightsData.savings_rate >= 20
-                        ? "text-[#10b981]"
+                        ? "text-[#00e599]"
                         : insightsData.savings_rate >= 10
-                          ? "text-[#fbbf24]"
-                          : "text-[#f43f5e]"
+                        ? "text-[#fbbf24]"
+                        : "text-[#fb7185]"
                     }`}
                   >
                     {Number(insightsData.savings_rate || 0).toFixed(1)}%
-                  </p>
-                </div>
-                <div className="flex-1 bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2.5 text-center">
-                  <p className="text-[10px] text-[#64748b] uppercase tracking-wide mb-1">Top category</p>
-                  <p className="text-[13px] font-semibold text-[#f1f5f9] truncate">
-                    {insightsData.highest_spending_category || "—"}
-                  </p>
-                </div>
-              </div>
-
-              {!insightsData.recommendation && (
-                <p className="text-[12px] text-[#64748b] text-center py-4">
-                  Insights will appear after upload
-                </p>
-              )}
-            </div>
-
-            <div className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5">
-              <p className="text-[13px] font-semibold text-[#f1f5f9] mb-3">Anomalies</p>
-              {insightsData.unusual_transactions.length ? (
-                insightsData.unusual_transactions.slice(0, 3).map((tx, index) => (
-                  <div
-                    key={tx.id || index}
-                    className="flex items-start justify-between py-2.5 border-b border-white/[0.04] last:border-0 gap-3"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12px] text-[#94a3b8] truncate">
-                        {tx.description || "Unusual transaction"}
-                      </p>
-                      <p className="text-[10px] text-[#64748b] mt-0.5">{tx.date}</p>
-                    </div>
-                    <span className="text-[12px] text-[#f43f5e] font-semibold flex-shrink-0">
-                      −₹{Math.abs(Number(tx.amount || 0)).toLocaleString("en-IN")}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-[12px] text-[#64748b]">No unusual activity detected</p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5 mt-4">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[13px] font-semibold text-[#f1f5f9]">Budget prediction</p>
-            <span className="text-[11px] text-[#64748b] bg-white/5 px-2 py-1 rounded-lg">Next 30 days</span>
-          </div>
-          {Array.isArray(budgetData) && budgetData.length ? (
-            <div className="space-y-3">
-              {budgetData.slice(0, 3).map((item) => (
-                <div key={item.category} className="flex items-center justify-between bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2.5">
-                  <span className="text-[12px] text-[#94a3b8]">{item.category}</span>
-                  <span className="text-[12px] text-[#f1f5f9] font-semibold">
-                    ₹{Number(item.suggested_budget || 0).toLocaleString("en-IN")}
                   </span>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex items-center gap-4 py-3">
-              <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
-                <div className="h-full w-0 bg-[#6c63ff] rounded-full" />
+
+                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-white/40 block mb-1">
+                    Peak Outflow
+                  </span>
+                  <span className="text-xs font-medium text-white/90 truncate block">
+                    {insightsData.highest_spending_category || "—"}
+                  </span>
+                </div>
               </div>
-              <span className="text-[12px] text-[#64748b] flex-shrink-0">
-                Upload data to generate prediction
-              </span>
             </div>
-          )}
+
+            {/* Anomaly Detection Reticle Card */}
+            <div className="apple-card p-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-white tracking-tight">Anomaly Watchdog</h3>
+                <span className="text-[10px] font-mono text-white/40">IsolationForest</span>
+              </div>
+
+              {insightsData.unusual_transactions.length ? (
+                <div className="space-y-2.5">
+                  {insightsData.unusual_transactions.slice(0, 3).map((tx, index) => (
+                    <div
+                      key={tx.id || index}
+                      className="p-3 rounded-xl bg-[#fb7185]/[0.05] border border-[#fb7185]/20 flex items-center justify-between gap-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs text-white/90 font-medium truncate">
+                          {tx.description || "Unusual expenditure"}
+                        </p>
+                        <p className="text-[10px] font-mono text-white/40 mt-0.5">{tx.date}</p>
+                      </div>
+                      <span className="text-xs font-mono font-semibold text-[#fb7185] whitespace-nowrap">
+                        −{formatINR(Math.abs(Number(tx.amount || 0)))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-5 text-center text-xs text-white/40 font-light">
+                  No statistical anomalies or unusual deviations flagged.
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
+        {/* ───────────────────────────────────────────────────────────── */}
+        {/* 3. CHART VISUALIZATIONS SECTION                               */}
+        {/* ───────────────────────────────────────────────────────────── */}
         {transactions.length > 0 && <ChartSection transactions={transactions} />}
 
+        {/* ───────────────────────────────────────────────────────────── */}
+        {/* 4. RECENT LEDGER TRANSACTIONS                                 */}
+        {/* ───────────────────────────────────────────────────────────── */}
         {hasTransactions ? (
           <div id="transactions">
             <TransactionTable transactions={transactions} loading={loading} />
           </div>
         ) : null}
 
-        <div id="profile" className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5 mt-6">
+        {/* ───────────────────────────────────────────────────────────── */}
+        {/* 5. USER PROFILE & SESSION FOOTER CARD                         */}
+        {/* ───────────────────────────────────────────────────────────── */}
+        <div id="profile" className="apple-card p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#6c63ff]/20 border border-[#6c63ff]/30 flex items-center justify-center text-[#6c63ff] font-semibold text-sm">
+              <div className="w-10 h-10 rounded-xl bg-white/[0.08] border border-white/[0.15] flex items-center justify-center text-white font-mono font-semibold text-sm shadow-inner">
                 {initials || "U"}
               </div>
               <div>
-                <p className="text-[14px] font-semibold text-[#f1f5f9]">{userDetails?.name || "User"}</p>
-                <p className="text-[12px] text-[#64748b]">{userDetails?.email || "No email"}</p>
+                <p className="text-sm font-medium text-white">{userDetails?.name || "User Profile"}</p>
+                <p className="text-xs text-white/40 font-mono">{userDetails?.email || "No email bound"}</p>
               </div>
             </div>
-            <span className="self-start sm:self-auto text-[11px] font-medium px-2.5 py-1 rounded-lg bg-white/5 text-[#94a3b8] border border-white/5">
-              {userDetails?.accountType || "Standard"}
+            <span className="self-start sm:self-auto text-[11px] font-mono px-3 py-1 rounded-lg bg-white/[0.04] text-white/70 border border-white/[0.08]">
+              {userDetails?.accountType || "Standard Session"}
             </span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-white/5 text-[12px]">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-white/[0.06] text-xs">
             <div>
-              <span className="text-[#64748b] block mb-0.5">Account Member Since</span>
-              <span className="text-[#f1f5f9] font-medium">{formatDate(userDetails?.createdAt)}</span>
+              <span className="text-white/40 block mb-1 font-mono uppercase text-[10px]">Membership Inception</span>
+              <span className="text-white/80 font-medium">{formatDate(userDetails?.createdAt)}</span>
             </div>
             <div>
-              <span className="text-[#64748b] block mb-0.5">Session Status</span>
-              <span className="text-[#10b981] font-medium">Active</span>
+              <span className="text-white/40 block mb-1 font-mono uppercase text-[10px]">Session Security</span>
+              <span className="text-[#00e599] font-mono font-medium flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00e599]" />
+                Authenticated & Isolated
+              </span>
             </div>
           </div>
         </div>
-      </section>
+      </div>
     </Layout>
   );
 }

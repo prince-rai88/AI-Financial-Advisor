@@ -9,7 +9,7 @@ import {
   PointElement,
   Tooltip,
 } from "chart.js";
-import { Line, Pie } from "react-chartjs-2";
+import { Doughnut, Line } from "react-chartjs-2";
 import { formatINR } from "../utils/currency";
 
 ChartJS.register(
@@ -23,7 +23,15 @@ ChartJS.register(
   ArcElement
 );
 
-const pieColors = ["#6c63ff", "#22c55e", "#fbbf24", "#38bdf8", "#ef4444", "#9ca3af", "#5a52e0"];
+const applePalette = [
+  "#00e599", // Emerald
+  "#38bdf8", // Sapphire
+  "#fbbf24", // Amber
+  "#a78bfa", // Violet
+  "#fb7185", // Coral
+  "#94a3b8", // Slate
+  "#34d399", // Mint
+];
 
 function toCurrency(value) {
   return formatINR(value, { maximumFractionDigits: 0 });
@@ -51,10 +59,10 @@ export default function ChartSection({ transactions }) {
 
   if (!monthlyEntries.length && !categoryEntries.length) {
     return (
-      <section className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5">
-        <h2 className="text-[13px] font-semibold text-[#f1f5f9]">Expense Visualizations</h2>
-        <p className="text-[12px] text-[#64748b] mt-1">
-          Upload statements to unlock monthly and category insights.
+      <section className="apple-card p-6">
+        <h2 className="text-sm font-medium text-white">Expense Visualizations</h2>
+        <p className="text-xs text-white/50 mt-1 font-light">
+          Upload statements to unlock monthly trends and category allocation.
         </p>
       </section>
     );
@@ -64,18 +72,18 @@ export default function ChartSection({ transactions }) {
     labels: monthlyEntries.map(([month]) => month),
     datasets: [
       {
-        label: "Monthly Expenses",
+        label: "Monthly Outflow",
         data: monthlyEntries.map(([, amount]) => amount),
         fill: true,
         borderWidth: 2,
-        borderColor: "#6c63ff",
-        backgroundColor: "rgba(108,99,255,0.08)",
-        pointRadius: 3,
-        pointHoverRadius: 6,
-        pointBackgroundColor: "#6c63ff",
-        pointBorderColor: "#0a0c12",
+        borderColor: "#00e599",
+        backgroundColor: "rgba(0, 229, 153, 0.08)",
+        pointRadius: 4,
+        pointHoverRadius: 7,
+        pointBackgroundColor: "#00e599",
+        pointBorderColor: "#07090e",
         pointBorderWidth: 2,
-        tension: 0.4,
+        tension: 0.35,
       },
     ],
   };
@@ -85,97 +93,123 @@ export default function ChartSection({ transactions }) {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        labels: {
-          color: "#64748b",
-          usePointStyle: true,
-          pointStyle: "circle",
-        },
+        display: false,
       },
       tooltip: {
-        backgroundColor: "#1c2235",
-        borderColor: "rgba(255,255,255,0.07)",
+        backgroundColor: "rgba(12, 16, 24, 0.95)",
+        borderColor: "rgba(255, 255, 255, 0.1)",
         borderWidth: 1,
-        titleColor: "#f1f5f9",
-        bodyColor: "#94a3b8",
-        padding: 10,
-        cornerRadius: 8,
+        titleColor: "#f8fafc",
+        titleFont: { size: 12, weight: "600" },
+        bodyColor: "#00e599",
+        bodyFont: { size: 13, weight: "bold" },
+        padding: 12,
+        cornerRadius: 12,
         callbacks: {
-          label: (context) => ` ${toCurrency(context.raw)}`,
+          label: (context) => ` Outflow: ${toCurrency(context.parsed.y)}`,
         },
       },
     },
     scales: {
       x: {
-        ticks: { color: "#64748b" },
-        grid: { display: false },
-        border: { display: false },
+        grid: {
+          color: "rgba(255, 255, 255, 0.03)",
+        },
+        ticks: {
+          color: "rgba(255, 255, 255, 0.4)",
+          font: { size: 10, family: "monospace" },
+        },
       },
       y: {
+        grid: {
+          color: "rgba(255, 255, 255, 0.04)",
+        },
         ticks: {
-          color: "#64748b",
+          color: "rgba(255, 255, 255, 0.4)",
+          font: { size: 10, family: "monospace" },
           callback: (value) => toCurrency(value),
         },
-        grid: {
-          color: "rgba(255,255,255,0.04)",
-        },
-        border: { display: false },
       },
     },
   };
 
-  const pieData = {
+  const doughnutData = {
     labels: categoryEntries.map(([category]) => category),
     datasets: [
       {
-        label: "Expenses by Category",
         data: categoryEntries.map(([, amount]) => amount),
-        backgroundColor: categoryEntries.map((_, index) => pieColors[index % pieColors.length]),
+        backgroundColor: applePalette.slice(0, categoryEntries.length),
         borderWidth: 2,
-        borderColor: "#1e2130",
+        borderColor: "#07090e",
+        hoverOffset: 4,
       },
     ],
   };
 
-  const pieOptions = {
+  const doughnutOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    cutout: "75%",
     plugins: {
       legend: {
         position: "bottom",
-        labels: { color: "#64748b", boxWidth: 10, padding: 16 },
+        labels: {
+          color: "rgba(255, 255, 255, 0.6)",
+          font: { size: 11 },
+          usePointStyle: true,
+          pointStyle: "circle",
+          padding: 16,
+        },
       },
       tooltip: {
-        backgroundColor: "#1c2235",
-        borderColor: "rgba(255,255,255,0.07)",
+        backgroundColor: "rgba(12, 16, 24, 0.95)",
+        borderColor: "rgba(255, 255, 255, 0.1)",
         borderWidth: 1,
-        titleColor: "#f1f5f9",
+        titleColor: "#f8fafc",
+        titleFont: { size: 12, weight: "600" },
         bodyColor: "#94a3b8",
-        padding: 10,
-        cornerRadius: 8,
+        padding: 12,
+        cornerRadius: 12,
         callbacks: {
-          label: (context) => ` ${context.label}: ${toCurrency(context.raw)}`,
+          label: (context) => ` ${toCurrency(context.parsed)}`,
         },
       },
     },
   };
 
   return (
-    <section className="grid gap-4 grid-cols-1 lg:grid-cols-3">
-      <article className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5 lg:col-span-2">
-        <h3 className="text-[13px] font-semibold text-[#f1f5f9] mb-0.5">Monthly Expense Trend</h3>
-        <p className="text-[12px] text-[#64748b] mb-4">Track spending patterns over time</p>
-        <div className="mt-4 h-56 md:h-72 w-full">
+    <section className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      {/* Monthly Velocity Curve */}
+      <div className="lg:col-span-7 apple-card p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-sm font-medium text-white tracking-tight">Spending Velocity</h3>
+            <p className="text-xs text-white/40 font-light mt-0.5">Historical monthly outflow aggregation</p>
+          </div>
+          <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-white/[0.04] border border-white/[0.08] text-white/50">
+            Trend
+          </span>
+        </div>
+        <div className="h-64">
           <Line data={lineData} options={lineOptions} />
         </div>
-      </article>
+      </div>
 
-      <article className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5">
-        <h3 className="text-[13px] font-semibold text-[#f1f5f9] mb-0.5">Expense Categories</h3>
-        <p className="text-[12px] text-[#64748b] mb-4">Distribution of expenses by category</p>
-        <div className="mt-4 h-56 md:h-72 w-full">
-          <Pie data={pieData} options={pieOptions} />
+      {/* Doughnut Allocation Ring */}
+      <div className="lg:col-span-5 apple-card p-6 flex flex-col justify-between">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-sm font-medium text-white tracking-tight">Category Allocation</h3>
+            <p className="text-xs text-white/40 font-light mt-0.5">Distribution across spending buckets</p>
+          </div>
+          <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-white/[0.04] border border-white/[0.08] text-white/50">
+            Ratio
+          </span>
         </div>
-      </article>
+        <div className="h-64 flex items-center justify-center">
+          <Doughnut data={doughnutData} options={doughnutOptions} />
+        </div>
+      </div>
     </section>
   );
 }

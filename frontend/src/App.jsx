@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
 import ToastContainer from "./components/ToastContainer";
@@ -8,8 +8,6 @@ import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import Insights from "./pages/Insights";
 import Budget from "./pages/Budget";
-
-const AppleLanding = lazy(() => import("./pages/AppleLanding"));
 import {
   ACCESS_TOKEN_KEY,
   REFRESH_TOKEN_KEY,
@@ -85,37 +83,7 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={
-              <Suspense
-                fallback={
-                  <div className="min-h-screen bg-[#07090e] flex items-center justify-center">
-                    <div className="w-8 h-8 rounded-full border-2 border-white/20 border-t-[#00e599] animate-spin" />
-                  </div>
-                }
-              >
-                <AppleLanding
-                  onGuestLogin={handleGuestLogin}
-                  isAuth={isAuth}
-                />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/overview"
-            element={
-              <Suspense
-                fallback={
-                  <div className="min-h-screen bg-[#07090e] flex items-center justify-center">
-                    <div className="w-8 h-8 rounded-full border-2 border-white/20 border-t-[#00e599] animate-spin" />
-                  </div>
-                }
-              >
-                <AppleLanding
-                  onGuestLogin={handleGuestLogin}
-                  isAuth={isAuth}
-                />
-              </Suspense>
-            }
+            element={<Navigate replace to={isAuth ? "/dashboard" : "/login"} />}
           />
           <Route
             path="/login"

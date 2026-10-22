@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { financeApi } from "../api";
 import Layout from "../components/Layout";
 import UploadSection from "../components/UploadSection";
+import { formatINR } from "../utils/currency";
 
 const PAGE_SIZE = 15;
 
@@ -71,8 +72,8 @@ export default function Transactions({ onLogout }) {
           va = new Date(a.date);
           vb = new Date(b.date);
         } else if (sortField === "amount") {
-          va = Number(a.amount);
-          vb = Number(b.amount);
+          va = Math.abs(Number(a.amount));
+          vb = Math.abs(Number(b.amount));
         } else {
           va = (a[sortField] || "").toString();
           vb = (b[sortField] || "").toString();
@@ -89,7 +90,7 @@ export default function Transactions({ onLogout }) {
   );
 
   const totalPages = useMemo(
-    () => Math.ceil(filtered.length / PAGE_SIZE),
+    () => Math.max(1, Math.ceil(filtered.length / PAGE_SIZE)),
     [filtered.length]
   );
 
@@ -128,32 +129,33 @@ export default function Transactions({ onLogout }) {
       rightSlot={
         <button
           onClick={() => setShowUpload(true)}
-          className="flex items-center gap-2 bg-[#6c63ff] hover:bg-[#5a52e0] text-white text-[13px] font-medium px-4 py-2 rounded-xl transition-colors"
+          className="flex items-center gap-1.5 bg-white hover:bg-white/95 text-black text-xs font-semibold px-3.5 py-1.5 rounded-xl transition-all shadow-[0_2px_12px_rgba(255,255,255,0.15)] cursor-pointer"
         >
-          + Upload CSV
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span>Upload CSV</span>
         </button>
       }
     >
+      {/* Upload Statement Modal */}
       {showUpload && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
           onClick={(e) => e.target === e.currentTarget && setShowUpload(false)}
         >
-          <div className="w-full max-w-[520px] mx-4 bg-[#161b27] border border-white/[0.07] rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-5">
+          <div className="w-full max-w-[620px] bg-[#0c0e14] border border-white/10 rounded-3xl p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/[0.06]">
               <div>
-                <p className="text-[15px] font-semibold text-[#f1f5f9]">
-                  Upload statement
-                </p>
-                <p className="text-[12px] text-[#64748b] mt-0.5">
-                  Supported: CSV, XLSX · Max 10 MB
-                </p>
+                <p className="text-sm font-medium text-white tracking-tight">Statement Ingestion</p>
+                <p className="text-xs text-white/40 mt-0.5">Upload CSV or XLSX ledger export</p>
               </div>
               <button
                 onClick={() => setShowUpload(false)}
-                className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-[#64748b] hover:text-[#f1f5f9] transition-colors text-[18px] leading-none"
+                className="w-7 h-7 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-white/60 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer"
               >
-                ×
+                ✕
               </button>
             </div>
             <UploadSection
@@ -167,306 +169,240 @@ export default function Transactions({ onLogout }) {
       )}
 
       {error && (
-        <div className="mb-4 bg-[#f43f5e]/10 border border-[#f43f5e]/20 rounded-xl px-4 py-3 text-[13px] text-[#f43f5e]">
+        <div className="mb-4 p-3.5 rounded-2xl bg-[#f43f5e]/10 border border-[#f43f5e]/25 text-xs text-[#f43f5e]">
           {error}
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-3 mb-6">
-        <div className="flex items-center gap-2.5 bg-[#161b27] border border-white/[0.07] rounded-xl px-4 py-2.5">
-          <span className="text-[11px] text-[#64748b] uppercase tracking-wide">
-            Total
+      {/* Top Aggregates Chips */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+        <div className="apple-card px-4 py-3 flex items-center justify-between">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-white/40">
+            Total Records
           </span>
-          <span className="text-[13px] font-bold text-[#f1f5f9]">
+          <span className="text-sm font-semibold font-mono tabular-numbers text-white">
             {transactions.length}
           </span>
         </div>
-        <div className="flex items-center gap-2.5 bg-[#161b27] border border-white/[0.07] rounded-xl px-4 py-2.5">
-          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#10b981]" />
-          <span className="text-[11px] text-[#64748b] uppercase tracking-wide">
-            Income
+
+        <div className="apple-card px-4 py-3 flex items-center justify-between">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-white/40">
+            Aggregate Inflow
           </span>
-          <span className="text-[13px] font-bold text-[#10b981]">
-            ₹{totalIncome.toLocaleString("en-IN")}
+          <span className="text-sm font-semibold font-mono tabular-numbers text-[#00e599]">
+            {formatINR(totalIncome)}
           </span>
         </div>
-        <div className="flex items-center gap-2.5 bg-[#161b27] border border-white/[0.07] rounded-xl px-4 py-2.5">
-          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#f43f5e]" />
-          <span className="text-[11px] text-[#64748b] uppercase tracking-wide">
-            Expenses
+
+        <div className="apple-card px-4 py-3 flex items-center justify-between">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-white/40">
+            Aggregate Outflow
           </span>
-          <span className="text-[13px] font-bold text-[#f43f5e]">
-            ₹{totalExpense.toLocaleString("en-IN")}
+          <span className="text-sm font-semibold font-mono tabular-numbers text-[#fb7185]">
+            {formatINR(totalExpense)}
           </span>
         </div>
       </div>
 
-      <div className="bg-[#161b27] border border-white/[0.07] rounded-2xl overflow-hidden">
-        <div className="flex flex-wrap items-center gap-3 p-4 border-b border-white/[0.07]">
-          <div className="relative flex-1 min-w-[200px]">
-            <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748b]"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <circle cx="11" cy="11" r="7" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
+      {/* Filter and Search Glass Toolbar */}
+      <div className="apple-card p-4 mb-6">
+        <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+          {/* Search bar */}
+          <div className="relative flex-1 max-w-md">
             <input
               type="text"
-              placeholder="Search transactions..."
+              placeholder="Search by description or merchant..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              className="w-full bg-[#1c2235] border border-white/[0.07] rounded-xl pl-9 pr-4 py-2 text-[13px] text-[#f1f5f9] placeholder-[#64748b] outline-none focus:border-[#6c63ff]/50 transition-colors"
+              className="w-full pl-9 text-xs"
             />
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
           </div>
 
-          <div className="flex items-center bg-[#1c2235] border border-white/[0.07] rounded-xl p-1 gap-1">
-            {["all", "income", "expense"].map((type) => (
-              <button
-                key={type}
-                onClick={() => {
-                  setFilterType(type);
-                  setPage(1);
-                }}
-                className={`px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors capitalize ${
-                  filterType === type
-                    ? "bg-[#6c63ff] text-white"
-                    : "text-[#64748b] hover:text-[#f1f5f9]"
-                }`}
-              >
-                {type}
-              </button>
-            ))}
-          </div>
-
-          <select
-            value={filterCategory}
-            onChange={(e) => {
-              setFilterCategory(e.target.value);
-              setPage(1);
-            }}
-            className="bg-[#1c2235] border border-white/[0.07] rounded-xl px-3 py-2 text-[13px] text-[#f1f5f9] outline-none focus:border-[#6c63ff]/50 transition-colors cursor-pointer"
-          >
-            <option value="all">All categories</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-
-          <span className="text-[12px] text-[#64748b] ml-auto">
-            {filtered.length} result{filtered.length !== 1 ? "s" : ""}
-          </span>
-        </div>
-
-        {loading ? (
-          <div className="space-y-px">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4 px-5 py-4">
-                <div className="h-3 bg-white/5 rounded animate-pulse w-20" />
-                <div className="h-3 bg-white/5 rounded animate-pulse flex-1" />
-                <div className="h-3 bg-white/5 rounded animate-pulse w-24" />
-                <div className="h-3 bg-white/5 rounded animate-pulse w-16" />
-              </div>
-            ))}
-          </div>
-        ) : paginated.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-[#64748b]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-                <rect x="9" y="3" width="6" height="4" rx="1" />
-                <path d="M9 12h6M9 16h4" />
-              </svg>
-            </div>
-            <p className="text-[14px] font-medium text-[#f1f5f9]">
-              {transactions.length === 0
-                ? "No transactions yet"
-                : "No results found"}
-            </p>
-            <p className="text-[12px] text-[#64748b]">
-              {transactions.length === 0
-                ? "Upload a CSV or XLSX file to get started"
-                : "Try adjusting your search or filters"}
-            </p>
-            {transactions.length === 0 && (
-              <button
-                onClick={() => setShowUpload(true)}
-                className="mt-2 bg-[#6c63ff] hover:bg-[#5a52e0] text-white text-[13px] font-medium px-5 py-2.5 rounded-xl transition-colors"
-              >
-                + Upload CSV
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="w-full">
-            <div className="hidden md:block">
-              <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/[0.07]">
-                {[
-                  { label: "Date", field: "date", width: "w-[120px]" },
-                  { label: "Description", field: "description", width: "" },
-                  { label: "Category", field: null, width: "w-[130px]" },
-                  { label: "Amount", field: "amount", width: "w-[120px]" },
-                ].map((col) => (
-                  <th
-                    key={col.label}
-                    onClick={() => col.field && handleSort(col.field)}
-                    className={`px-5 py-3 text-left text-[11px] font-semibold text-[#64748b] uppercase tracking-wide ${col.width} ${
-                      col.field
-                        ? "cursor-pointer hover:text-[#f1f5f9] select-none"
-                        : ""
-                    }`}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      {col.label}
-                      {col.field && (
-                        <span className="text-[10px]">
-                          <SortIcon
-                            field={col.field}
-                            currentField={sortField}
-                            currentDir={sortDir}
-                          />
-                        </span>
-                      )}
-                    </span>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {paginated.map((tx, i) => {
-                const amt = Number(tx.amount);
-                const isIncome = amt > 0;
-                const dateStr = tx.date
-                  ? new Date(tx.date).toLocaleDateString("en-IN", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })
-                  : "—";
-                return (
-                  <tr
-                    key={tx.id || i}
-                    className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors"
-                  >
-                    <td className="px-5 py-3.5 text-[12px] text-[#64748b] whitespace-nowrap">
-                      {dateStr}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className="text-[13px] text-[#f1f5f9] line-clamp-1">
-                        {tx.description || "—"}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      {getCategoryName(tx.category) ? (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-medium bg-[#6c63ff]/10 text-[#6c63ff] border border-[#6c63ff]/20">
-                          {getCategoryName(tx.category)}
-                        </span>
-                      ) : (
-                        <span className="text-[12px] text-[#3d4a63]">
-                          —
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5 text-right whitespace-nowrap">
-                      <span
-                        className={`text-[13px] font-semibold ${
-                          isIncome ? "text-[#10b981]" : "text-[#f43f5e]"
-                        }`}
-                      >
-                        {isIncome ? "+" : "−"}₹
-                        {Math.abs(amt).toLocaleString("en-IN")}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-              </table>
-            </div>
-            <div className="md:hidden space-y-2 p-4 outline-none">
-              {paginated.map((tx, i) => (
-                <div key={tx.id || i} className="bg-[#1c2235] border border-white/[0.07] rounded-xl p-3">
-                  <div className="flex justify-between items-start mb-1">
-                    <span className="text-[13px] text-[#f1f5f9] font-medium line-clamp-1 flex-1 mr-2">
-                      {tx.description || "—"}
-                    </span>
-                    <span className={`text-[13px] font-bold flex-shrink-0 ${
-                      Number(tx.amount) > 0 ? "text-[#10b981]" : "text-[#f43f5e]"
-                    }`}>
-                      {Number(tx.amount) > 0 ? "+" : "−"}
-                      ₹{Math.abs(Number(tx.amount)).toLocaleString("en-IN")}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-[#64748b]">
-                      {tx.date ? new Date(tx.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}
-                    </span>
-                    {getCategoryName(tx.category) && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-lg bg-[#6c63ff]/10 text-[#6c63ff] border border-[#6c63ff]/20">
-                        {getCategoryName(tx.category)}
-                      </span>
-                    )}
-                  </div>
-                </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Type Segmented Pill Toggle */}
+            <div className="flex p-0.5 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+              {["all", "income", "expense"].map((t) => (
+                <button
+                  key={t}
+                  onClick={() => {
+                    setFilterType(t);
+                    setPage(1);
+                  }}
+                  className={`px-3 py-1 rounded-lg text-xs font-mono uppercase tracking-wider transition-all cursor-pointer ${
+                    filterType === t
+                      ? "bg-white text-black font-semibold shadow-sm"
+                      : "text-white/50 hover:text-white"
+                  }`}
+                >
+                  {t}
+                </button>
               ))}
             </div>
+
+            {/* Category Dropdown */}
+            {categories.length > 0 && (
+              <select
+                value={filterCategory}
+                onChange={(e) => {
+                  setFilterCategory(e.target.value);
+                  setPage(1);
+                }}
+                className="w-auto text-xs px-3 py-1.5"
+              >
+                <option value="all">All Categories</option>
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {/* Sort Actions */}
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => handleSort("date")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-mono transition-all cursor-pointer ${
+                  sortField === "date"
+                    ? "bg-white/10 text-white border border-white/20"
+                    : "bg-white/[0.03] text-white/50 hover:text-white border border-white/[0.06]"
+                }`}
+              >
+                Date <SortIcon field="date" currentField={sortField} currentDir={sortDir} />
+              </button>
+              <button
+                onClick={() => handleSort("amount")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-mono transition-all cursor-pointer ${
+                  sortField === "amount"
+                    ? "bg-white/10 text-white border border-white/20"
+                    : "bg-white/[0.03] text-white/50 hover:text-white border border-white/[0.06]"
+                }`}
+              >
+                Amount <SortIcon field="amount" currentField={sortField} currentDir={sortDir} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Transactions Table Card */}
+      <div className="apple-card p-6">
+        {loading ? (
+          <div className="space-y-3 py-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-10 bg-white/[0.02] rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.06] mx-auto flex items-center justify-center text-white/30 mb-3">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-white/80">No matching transactions</p>
+            <p className="text-xs text-white/40 mt-1">Try modifying your search or filters</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-white/[0.06] text-[10px] font-mono uppercase tracking-wider text-white/40">
+                  <th className="py-3 px-3">Date</th>
+                  <th className="py-3 px-3">Type</th>
+                  <th className="py-3 px-3">Description</th>
+                  <th className="py-3 px-3">Category</th>
+                  <th className="py-3 px-3 text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/[0.04]">
+                {paginated.map((tx) => {
+                  const isExpense = Number(tx.amount) < 0;
+                  const absAmount = Math.abs(Number(tx.amount));
+                  const catName = getCategoryName(tx.category) || "General";
+
+                  return (
+                    <tr
+                      key={tx.id}
+                      className="hover:bg-white/[0.02] transition-colors group"
+                    >
+                      <td className="py-3 px-3 font-mono text-white/50 text-[11px] whitespace-nowrap">
+                        {tx.date}
+                      </td>
+                      <td className="py-3 px-3 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono ${
+                            isExpense
+                              ? "bg-[#fb7185]/10 text-[#fb7185] border border-[#fb7185]/20"
+                              : "bg-[#00e599]/10 text-[#00e599] border border-[#00e599]/20"
+                          }`}
+                        >
+                          <span
+                            className={`w-1 h-1 rounded-full ${
+                              isExpense ? "bg-[#fb7185]" : "bg-[#00e599]"
+                            }`}
+                          />
+                          {isExpense ? "Expense" : "Income"}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 font-medium text-white/90 group-hover:text-white transition-colors">
+                        {tx.description}
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="text-[11px] font-mono text-white/60 px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.06]">
+                          {catName}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-right font-mono tabular-numbers text-[13px] font-medium whitespace-nowrap">
+                        <span className={isExpense ? "text-[#fb7185]" : "text-[#00e599]"}>
+                          {isExpense ? "−" : "+"}
+                          {formatINR(absAmount)}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
 
+        {/* Pagination Toolbar */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-4 border-t border-white/[0.07]">
-            <span className="text-[12px] text-[#64748b]">
-              Page {page} of {totalPages} · {filtered.length} transactions
+          <div className="flex items-center justify-between border-t border-white/[0.06] pt-4 mt-4 text-xs font-mono text-white/40">
+            <span>
+              Page {page} of {totalPages}
             </span>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 rounded-lg text-[12px] font-medium bg-white/5 text-[#64748b] hover:bg-white/10 hover:text-[#f1f5f9] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="px-3 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed text-white transition-colors"
               >
-                ← Prev
+                Previous
               </button>
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const pageNum = Math.max(
-                  1,
-                  Math.min(page - 2 + i, totalPages - 4 + i)
-                );
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setPage(pageNum)}
-                    className={`w-8 h-8 rounded-lg text-[12px] font-medium transition-colors ${
-                      page === pageNum
-                        ? "bg-[#6c63ff] text-white"
-                        : "bg-white/5 text-[#64748b] hover:bg-white/10 hover:text-[#f1f5f9]"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="px-3 py-1.5 rounded-lg text-[12px] font-medium bg-white/5 text-[#64748b] hover:bg-white/10 hover:text-[#f1f5f9] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="px-3 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed text-white transition-colors"
               >
-                Next →
+                Next
               </button>
             </div>
           </div>

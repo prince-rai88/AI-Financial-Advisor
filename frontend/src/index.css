@@ -2,38 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background: #0a0c12;
-  color: #f1f5f9;
-  font-family: "Inter", system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
+@layer base {
+  :root {
+    --bg-main: #07090e;
+    --card-bg: rgba(255, 255, 255, 0.035);
+    --card-border: rgba(255, 255, 255, 0.07);
+    --card-border-highlight: rgba(255, 255, 255, 0.14);
+    --accent-emerald: #00e599;
+    --accent-emerald-hover: #00cc88;
+  }
+
+  body {
+    background: #07090e;
+    color: #f8fafc;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
 }
 
-* {
-  box-sizing: border-box;
+/* Apple-style Glassmorphic Panels */
+.apple-card {
+  background: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-top-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border-radius: 1.25rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.apple-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  border-top-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Apple Precision Inputs */
 input,
 textarea,
 select {
-  background: #161b27 !important;
+  background: rgba(255, 255, 255, 0.04) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  color: #f1f5f9 !important;
-  border-radius: 8px;
+  color: #f8fafc !important;
+  border-radius: 0.75rem;
   padding: 10px 14px;
-  font-size: 14px;
+  font-size: 13px;
   width: 100%;
   outline: none;
-  transition: border-color 0.15s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 input:focus,
-textarea:focus {
-  border-color: #6c63ff !important;
+textarea:focus,
+select:focus {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(0, 229, 153, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(0, 229, 153, 0.15) !important;
 }
 
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Tabular figures for financial currency */
+.tabular-numbers {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Minimalist Scrollbars */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -41,30 +88,30 @@ textarea:focus {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 ::selection {
-  background: rgba(108, 99, 255, 0.3);
-  color: #f1f5f9;
+  background: rgba(0, 229, 153, 0.25);
+  color: #ffffff;
 }
 
-/* Minimum touch target size */
+/* Touch targets */
 button, a, input, select {
-  min-height: 44px;
+  min-height: 40px;
 }
 
-/* Prevent text size adjustment on iOS */
-html {
-  -webkit-text-size-adjust: 100%;
-}
-
-/* Smooth scrolling */
-* {
-  -webkit-overflow-scrolling: touch;
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
