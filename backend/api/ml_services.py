@@ -30,16 +30,39 @@ def categorize_transaction(description: str) -> str:
 
 def _to_rows(transactions_queryset):
     rows = []
-    for tx in transactions_queryset.select_related("category"):
-        rows.append(
-            {
-                "id": tx.id,
-                "date": tx.date,
-                "description": tx.description,
-                "amount": float(tx.amount),
-                "category": tx.category.name if tx.category else categorize_transaction(tx.description),
-            }
-        )
+    if hasattr(transactions_queryset, "select_related"):
+        iterable = transactions_queryset.select_related("category")
+    else:
+        iterable = transactions_queryset
+
+    for tx in iterable:
+        if isinstance(tx, dict):
+            date_val = tx.get("date")
+            if isinstance(date_val, str):
+                import datetime
+                date_val = datetime.date.fromisoformat(date_val)
+            category_val = tx.get("category")
+            if not category_val:
+                category_val = categorize_transaction(tx.get("description", ""))
+            rows.append(
+                {
+                    "id": tx.get("id"),
+                    "date": date_val,
+                    "description": tx.get("description", ""),
+                    "amount": float(tx.get("amount", 0)),
+                    "category": category_val,
+                }
+            )
+        else:
+            rows.append(
+                {
+                    "id": tx.id,
+                    "date": tx.date,
+                    "description": tx.description,
+                    "amount": float(tx.amount),
+                    "category": tx.category.name if tx.category else categorize_transaction(tx.description),
+                }
+            )
     return rows
 
 

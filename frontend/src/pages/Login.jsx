@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { authApi } from "../api";
 import { notify } from "../utils/toast";
 
-function Login({ onLoginSuccess }) {
+function Login({ onLoginSuccess, onGuestLogin }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -12,6 +12,14 @@ function Login({ onLoginSuccess }) {
   const handleChange = (event) => {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleContinueAsGuest = () => {
+    if (onGuestLogin) {
+      onGuestLogin();
+    }
+    notify("Welcome to FinAI Demo Mode!", "info");
+    navigate("/dashboard", { replace: true });
   };
 
   const handleSubmit = async (event) => {
@@ -104,6 +112,27 @@ function Login({ onLoginSuccess }) {
               {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
+
+          <div className="relative my-5 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/10" />
+            </div>
+            <span className="relative bg-[#161b27] px-3 text-[11px] uppercase tracking-wider text-[#64748b]">
+              or explore demo
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleContinueAsGuest}
+            className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-[#f1f5f9] border border-white/10 hover:border-[#6c63ff]/40 font-medium py-3 rounded-xl text-[13px] transition-all cursor-pointer"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6c63ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            Continue as Guest
+          </button>
           </div>
         </div>
 

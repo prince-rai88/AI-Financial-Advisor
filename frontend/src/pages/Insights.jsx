@@ -37,7 +37,7 @@ export default function Insights({ onLogout }) {
         confidence_note: bRes.data?.confidence_note || "",
       });
       setTransactions(Array.isArray(tRes.data) ? tRes.data : []);
-    } catch (e) {
+    } catch {
       setError("Failed to load insights.");
     } finally {
       setLoading(false);

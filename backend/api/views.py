@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+from .demo_data import DEMO_TRANSACTIONS, DEMO_USER
 from .ml_services import (
     detect_anomalies,
     generate_insights,
@@ -205,3 +206,67 @@ class StatementViewSet(viewsets.ViewSet):
         except Exception:
             logger.exception("Failed to delete statement user=%s statement=%s", request.user.id, pk)
             return error_response("Could not delete statement.", status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class DemoUserAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response(DEMO_USER, status=status.HTTP_200_OK)
+
+
+class DemoTransactionsAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response(DEMO_TRANSACTIONS, status=status.HTTP_200_OK)
+
+
+class DemoSummaryAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            data = generate_summary(DEMO_TRANSACTIONS)
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception:
+            logger.exception("Demo summary generation failed")
+            return error_response("Could not generate demo summary.", status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class DemoInsightsAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            data = generate_insights(DEMO_TRANSACTIONS)
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception:
+            logger.exception("Demo insight generation failed")
+            return error_response("Could not generate demo insights.", status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class DemoBudgetAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            data = predict_monthly_budget(DEMO_TRANSACTIONS)
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception:
+            logger.exception("Demo budget prediction failed")
+            return error_response("Could not predict demo budget.", status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class DemoAnomaliesAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            anomalies = detect_anomalies(DEMO_TRANSACTIONS)
+            return Response({"unusual_transactions": anomalies}, status=status.HTTP_200_OK)
+        except Exception:
+            logger.exception("Demo anomaly detection failed")
+            return error_response("Could not detect demo anomalies.", status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+

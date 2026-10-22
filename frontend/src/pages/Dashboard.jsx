@@ -1,13 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Chart as ChartJS } from "chart.js";
-import { CalendarClock, Mail, ShieldCheck, TrendingDown, TrendingUp, User } from "lucide-react";
 import { authApi, financeApi } from "../api";
 import ChartSection from "../components/ChartSection";
 import Layout from "../components/Layout";
-import StatCard from "../components/StatCard";
 import TransactionTable from "../components/TransactionTable";
 import UploadSection from "../components/UploadSection";
-import { formatINR } from "../utils/currency";
 import { notify } from "../utils/toast";
 
 ChartJS.defaults.color = "#9ca3af";
@@ -18,21 +15,6 @@ function formatDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Unavailable";
   return date.toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" });
-}
-
-function LoadingBlock({ className = "h-20" }) {
-  return <div className={`animate-pulse rounded-xl bg-bg-elevated ${className}`} />;
-}
-
-function InsightPill({ severity }) {
-  const tone =
-    severity === "high"
-      ? "bg-red/10 text-red"
-      : severity === "warning"
-        ? "bg-yellow/10 text-yellow"
-        : "bg-green/10 text-green";
-
-  return <span className={`rounded-full px-2 py-1 text-xs font-semibold ${tone}`}>{severity || "info"}</span>;
 }
 
 export default function Dashboard({ onLogout }) {
@@ -52,16 +34,12 @@ export default function Dashboard({ onLogout }) {
   const [transactions, setTransactions] = useState([]);
   const [userDetails, setUserDetails] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [userLoading, setUserLoading] = useState(true);
   const [error, setError] = useState("");
-  const [userError, setUserError] = useState("");
 
   const loadDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
-      setUserError("");
-      setUserLoading(true);
 
       const [summaryRes, transactionsRes, insightsRes] = await Promise.all([
         financeApi.fetchSummary(),
@@ -98,7 +76,7 @@ export default function Dashboard({ onLogout }) {
           name: userData.username || "Unavailable",
           email: userData.email || "Unavailable",
           createdAt: userData.date_joined,
-          accountType: "Standard",
+          accountType: userData.accountType || (userData.is_guest ? "Demo Mode (Read-Only)" : "Standard"),
         });
       } catch (fetchError) {
         setUserDetails(null);
@@ -106,10 +84,7 @@ export default function Dashboard({ onLogout }) {
         const message =
           backendMessage ||
           "We could not load your profile details right now. Please refresh and try again.";
-        setUserError(message);
         notify(message, "error");
-      } finally {
-        setUserLoading(false);
       }
     } catch (requestError) {
       const message =
@@ -126,30 +101,6 @@ export default function Dashboard({ onLogout }) {
     loadDashboardData();
   }, [loadDashboardData]);
 
-  const totalExpenses = useMemo(
-    () =>
-      Math.abs(
-        transactions
-          .filter((tx) => Number(tx.amount) < 0)
-          .reduce((sum, tx) => sum + Number(tx.amount), 0)
-      ),
-    [transactions]
-  );
-
-  const totalStatements = useMemo(() => transactions.length, [transactions.length]);
-
-  const monthlyTotals = useMemo(() => {
-    const map = new Map();
-    transactions.forEach((tx) => {
-      const month = String(tx.date || "").slice(0, 7);
-      if (!month) return;
-      map.set(month, (map.get(month) || 0) + Number(tx.amount || 0));
-    });
-    return Array.from(map.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .slice(-6);
-  }, [transactions]);
-
   const categoryTotals = useMemo(() => {
     const breakdown = categoryBreakdown || {};
     if (Object.keys(breakdown).length > 0) {
@@ -159,28 +110,14 @@ export default function Dashboard({ onLogout }) {
     }
     const map = new Map();
     transactions.forEach((tx) => {
-      const category = tx.category?.name || "Uncategorized";
+      const category =
+        (typeof tx.category === "object" && tx.category !== null
+          ? tx.category.name
+          : tx.category) || "Uncategorized";
       map.set(category, (map.get(category) || 0) + Math.abs(Number(tx.amount || 0)));
     });
     return Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
   }, [categoryBreakdown, transactions]);
-
-  const recentFive = useMemo(() => {
-    if (summary.recent_transactions.length > 0) return summary.recent_transactions;
-    return [...transactions]
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 5);
-  }, [summary.recent_transactions, transactions]);
-
-  const stats = useMemo(
-    () => [
-      { label: "Total Expenses", value: formatINR(totalExpenses), helper: "Cumulative spend" },
-      { label: "Uploaded Statements", value: totalStatements, helper: "Imported rows" },
-      { label: "Current Balance", value: formatINR(summary.net_balance), helper: "Net account position" },
-      { label: "Transactions", value: transactions.length, helper: "All records" },
-    ],
-    [summary.net_balance, totalExpenses, totalStatements, transactions.length]
-  );
 
   const hasTransactions = transactions.length > 0;
 
@@ -441,6 +378,33 @@ export default function Dashboard({ onLogout }) {
             <TransactionTable transactions={transactions} loading={loading} />
           </div>
         ) : null}
+
+        <div id="profile" className="bg-[#161b27] border border-white/[0.07] rounded-2xl p-5 mt-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#6c63ff]/20 border border-[#6c63ff]/30 flex items-center justify-center text-[#6c63ff] font-semibold text-sm">
+                {initials || "U"}
+              </div>
+              <div>
+                <p className="text-[14px] font-semibold text-[#f1f5f9]">{userDetails?.name || "User"}</p>
+                <p className="text-[12px] text-[#64748b]">{userDetails?.email || "No email"}</p>
+              </div>
+            </div>
+            <span className="self-start sm:self-auto text-[11px] font-medium px-2.5 py-1 rounded-lg bg-white/5 text-[#94a3b8] border border-white/5">
+              {userDetails?.accountType || "Standard"}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-white/5 text-[12px]">
+            <div>
+              <span className="text-[#64748b] block mb-0.5">Account Member Since</span>
+              <span className="text-[#f1f5f9] font-medium">{formatDate(userDetails?.createdAt)}</span>
+            </div>
+            <div>
+              <span className="text-[#64748b] block mb-0.5">Session Status</span>
+              <span className="text-[#10b981] font-medium">Active</span>
+            </div>
+          </div>
+        </div>
       </section>
     </Layout>
   );

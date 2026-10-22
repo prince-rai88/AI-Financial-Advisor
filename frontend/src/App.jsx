@@ -12,24 +12,35 @@ import {
   ACCESS_TOKEN_KEY,
   REFRESH_TOKEN_KEY,
   clearAuthStorage,
+  isGuestMode,
   isTokenValid,
+  setGuestMode,
 } from "./utils/auth";
 
 function App() {
   const [token, setToken] = useState(() => {
     const stored = localStorage.getItem(ACCESS_TOKEN_KEY);
     if (!isTokenValid(stored)) {
-      clearAuthStorage();
+      if (!isGuestMode()) {
+        clearAuthStorage();
+      }
       return null;
     }
     return stored;
   });
 
+  const [isGuest, setIsGuest] = useState(() => isGuestMode());
+
   useEffect(() => {
     const syncToken = () => {
       const stored = localStorage.getItem(ACCESS_TOKEN_KEY);
+      const guest = isGuestMode();
+      setIsGuest(guest);
+
       if (!isTokenValid(stored)) {
-        clearAuthStorage();
+        if (!guest) {
+          clearAuthStorage();
+        }
         setToken(null);
         return;
       }
@@ -39,9 +50,11 @@ function App() {
     return () => window.removeEventListener("storage", syncToken);
   }, []);
 
-  const isAuth = useMemo(() => isTokenValid(token), [token]);
+  const isAuth = useMemo(() => isTokenValid(token) || isGuest, [token, isGuest]);
 
   const handleLoginSuccess = ({ access, refresh }) => {
+    setGuestMode(false);
+    setIsGuest(false);
     localStorage.setItem(ACCESS_TOKEN_KEY, access);
     if (refresh) {
       localStorage.setItem(REFRESH_TOKEN_KEY, refresh);
@@ -49,9 +62,18 @@ function App() {
     setToken(access);
   };
 
+  const handleGuestLogin = () => {
+    clearAuthStorage();
+    setToken(null);
+    setGuestMode(true);
+    setIsGuest(true);
+  };
+
   const handleLogout = () => {
     clearAuthStorage();
     setToken(null);
+    setGuestMode(false);
+    setIsGuest(false);
   };
 
   return (
@@ -69,7 +91,10 @@ function App() {
               isAuth ? (
                 <Navigate replace to="/dashboard" />
               ) : (
-                <Login onLoginSuccess={handleLoginSuccess} />
+                <Login
+                  onLoginSuccess={handleLoginSuccess}
+                  onGuestLogin={handleGuestLogin}
+                />
               )
             }
           />

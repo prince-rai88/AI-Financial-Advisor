@@ -38,7 +38,10 @@ export default function ChartSection({ transactions }) {
     if (amount >= 0) return;
 
     const month = String(tx.date || "").slice(0, 7);
-    const category = tx.category || "Uncategorized";
+    const category =
+      typeof tx.category === "object" && tx.category !== null
+        ? tx.category.name || "Uncategorized"
+        : tx.category || "Uncategorized";
     expenseByMonth[month] = (expenseByMonth[month] || 0) + Math.abs(amount);
     expenseByCategory[category] = (expenseByCategory[category] || 0) + Math.abs(amount);
   });

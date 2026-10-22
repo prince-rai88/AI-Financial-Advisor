@@ -1,7 +1,9 @@
 import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { FileUp, UploadCloud } from "lucide-react";
 import { financeApi } from "../api";
 import LoadingSpinner from "./LoadingSpinner";
+import { isGuestMode } from "../utils/auth";
 import { notify } from "../utils/toast";
 
 const ACCEPTED_EXTENSIONS = ["csv", "xlsx"];
@@ -12,12 +14,43 @@ function isSupported(file) {
 }
 
 export default function UploadSection({ onUploadSuccess }) {
+  const isGuest = isGuestMode();
   const inputRef = useRef(null);
   const [file, setFile] = useState(null);
   const [dragOver, setDragOver] = useState(false);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState({ type: "", message: "" });
   const [uploading, setUploading] = useState(false);
+
+  if (isGuest) {
+    return (
+      <section className="rounded-xl border border-white/10 bg-[#161b27] p-6 text-center" id="upload-section">
+        <div className="mx-auto w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-3">
+          <UploadCloud className="h-6 w-6" />
+        </div>
+        <h3 className="text-[15px] font-semibold text-[#f1f5f9] mb-1">
+          Demo Mode is Read-Only
+        </h3>
+        <p className="text-[12px] text-[#64748b] max-w-md mx-auto mb-5 leading-relaxed">
+          You are currently exploring FinAI with a sample dataset. File uploads and real statement parsing are available with a free account.
+        </p>
+        <div className="flex items-center justify-center gap-3">
+          <Link
+            to="/register"
+            className="bg-[#6c63ff] hover:bg-[#5a52e0] text-white text-[13px] font-medium px-4 py-2 rounded-xl transition-colors inline-block"
+          >
+            Create Free Account
+          </Link>
+          <Link
+            to="/login"
+            className="text-[13px] text-[#64748b] hover:text-[#f1f5f9] px-4 py-2 rounded-xl transition-colors inline-block"
+          >
+            Sign In
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   const setSelectedFile = (candidate) => {
     if (!candidate) return;

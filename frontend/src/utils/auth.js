@@ -1,5 +1,18 @@
 export const ACCESS_TOKEN_KEY = "token";
 export const REFRESH_TOKEN_KEY = "refresh_token";
+export const GUEST_MODE_KEY = "finai_guest_mode";
+
+export function isGuestMode() {
+  return localStorage.getItem(GUEST_MODE_KEY) === "true";
+}
+
+export function setGuestMode(active) {
+  if (active) {
+    localStorage.setItem(GUEST_MODE_KEY, "true");
+  } else {
+    localStorage.removeItem(GUEST_MODE_KEY);
+  }
+}
 
 function decodeBase64Url(value) {
   const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
@@ -33,6 +46,7 @@ export function isTokenValid(token) {
 export function clearAuthStorage() {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
+  localStorage.removeItem(GUEST_MODE_KEY);
 }
 
 export function getAccessToken() {

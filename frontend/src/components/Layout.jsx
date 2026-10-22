@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { isGuestMode } from "../utils/auth";
 const NAV_ITEMS = [
   {
     label: "Dashboard",
@@ -57,6 +58,7 @@ const PROFILE_ITEM = {
 export default function Layout({ title, rightSlot, children, onLogout }) {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const guest = isGuestMode();
 
   const isActive = (hash, path) => {
     if (path) return location.pathname.startsWith(path);
@@ -78,7 +80,7 @@ export default function Layout({ title, rightSlot, children, onLogout }) {
         />
       )}
       <aside className={`fixed inset-y-0 left-0 z-50 w-[220px] transform transition-transform duration-200 lg:static lg:transform-none lg:flex-shrink-0 bg-[#0f1117] border-r border-white/5 flex flex-col py-6 px-4 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <div className="flex items-center gap-2 px-2 mb-8">
+        <div className="flex items-center gap-2 px-2 mb-2">
           <div className="w-7 h-7 rounded-lg bg-[#6c63ff] flex items-center justify-center text-white text-[11px] font-bold">
             F
           </div>
@@ -87,7 +89,16 @@ export default function Layout({ title, rightSlot, children, onLogout }) {
           </span>
         </div>
 
-        <nav className="flex-1">
+        {guest && (
+          <div className="mb-6 px-2">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+              Demo Mode
+            </span>
+          </div>
+        )}
+
+        <nav className={`flex-1 ${!guest ? "mt-6" : ""}`}>
           {NAV_ITEMS.map((item) => (
             <Link
               key={item.label}
@@ -129,6 +140,12 @@ export default function Layout({ title, rightSlot, children, onLogout }) {
             <h1 className="text-[18px] font-semibold text-[#f1f5f9]">{title}</h1>
           </div>
           <div className="flex items-center gap-3">
+            {guest && (
+              <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-[11px] font-medium" title="Exploring with deterministic fictional data">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                Guest Mode (Read-Only)
+              </div>
+            )}
             <span className="text-[12px] text-[#64748b] bg-white/5 px-3 py-1.5 rounded-lg">
               {new Date().toLocaleDateString("en-IN", {
                 weekday: "short",
@@ -137,20 +154,40 @@ export default function Layout({ title, rightSlot, children, onLogout }) {
                 year: "numeric",
               })}
             </span>
+            {guest && (
+              <Link
+                to="/register"
+                className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold bg-[#6c63ff] hover:bg-[#5a52e0] text-white transition-all shadow-sm"
+              >
+                Sign Up
+              </Link>
+            )}
             {rightSlot}
             <button
               onClick={onLogout}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-medium text-[#64748b] hover:text-[#f43f5e] hover:bg-[#f43f5e]/10 border border-white/[0.07] hover:border-[#f43f5e]/20 transition-all"
+              title={guest ? "Exit demo mode and go to login" : "Sign out of your account"}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-medium transition-all ${
+                guest
+                  ? "text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 border border-amber-500/25"
+                  : "text-[#64748b] hover:text-[#f43f5e] hover:bg-[#f43f5e]/10 border border-white/[0.07] hover:border-[#f43f5e]/20"
+              }`}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" y1="12" x2="9" y2="12" />
               </svg>
-              Logout
+              {guest ? "Exit Demo" : "Logout"}
             </button>
-            <div className="w-8 h-8 rounded-full bg-[#6c63ff]/20 border border-[#6c63ff]/30 flex items-center justify-center text-[#6c63ff] text-[12px] font-semibold">
-              P
+            <div
+              title={guest ? "Guest Demo Visitor" : "User Profile"}
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-semibold ${
+                guest
+                  ? "bg-amber-500/15 border border-amber-500/30 text-amber-400"
+                  : "bg-[#6c63ff]/20 border border-[#6c63ff]/30 text-[#6c63ff]"
+              }`}
+            >
+              {guest ? "G" : "P"}
             </div>
           </div>
         </header>
@@ -160,3 +197,4 @@ export default function Layout({ title, rightSlot, children, onLogout }) {
     </div>
   );
 }
+

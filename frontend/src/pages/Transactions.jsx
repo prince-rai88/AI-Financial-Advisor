@@ -30,7 +30,7 @@ export default function Transactions({ onLogout }) {
       setError("");
       const res = await financeApi.fetchTransactions();
       setTransactions(Array.isArray(res.data) ? res.data : []);
-    } catch (e) {
+    } catch {
       setError("Failed to load transactions. Please refresh.");
     } finally {
       setLoading(false);
@@ -41,8 +41,11 @@ export default function Transactions({ onLogout }) {
     loadTransactions();
   }, [loadTransactions]);
 
+  const getCategoryName = (category) =>
+    (typeof category === "object" && category !== null ? category.name : category) || "";
+
   const categories = useMemo(
-    () => [...new Set(transactions.map((tx) => tx.category?.name).filter(Boolean))],
+    () => [...new Set(transactions.map((tx) => getCategoryName(tx.category)).filter(Boolean))],
     [transactions]
   );
 
@@ -56,8 +59,9 @@ export default function Transactions({ onLogout }) {
           filterType === "all" ||
           (filterType === "income" && amt > 0) ||
           (filterType === "expense" && amt < 0);
+        const catName = getCategoryName(tx.category);
         const matchCat =
-          filterCategory === "all" || tx.category?.name === filterCategory;
+          filterCategory === "all" || catName === filterCategory;
         return matchSearch && matchType && matchCat;
       })
       .sort((a, b) => {
@@ -369,9 +373,9 @@ export default function Transactions({ onLogout }) {
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
-                      {tx.category?.name ? (
+                      {getCategoryName(tx.category) ? (
                         <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-medium bg-[#6c63ff]/10 text-[#6c63ff] border border-[#6c63ff]/20">
-                          {tx.category.name}
+                          {getCategoryName(tx.category)}
                         </span>
                       ) : (
                         <span className="text-[12px] text-[#3d4a63]">
@@ -413,9 +417,9 @@ export default function Transactions({ onLogout }) {
                     <span className="text-[11px] text-[#64748b]">
                       {tx.date ? new Date(tx.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}
                     </span>
-                    {tx.category?.name && (
+                    {getCategoryName(tx.category) && (
                       <span className="text-[10px] px-2 py-0.5 rounded-lg bg-[#6c63ff]/10 text-[#6c63ff] border border-[#6c63ff]/20">
-                        {tx.category.name}
+                        {getCategoryName(tx.category)}
                       </span>
                     )}
                   </div>

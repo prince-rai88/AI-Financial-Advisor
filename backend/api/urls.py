@@ -5,6 +5,12 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     AnomaliesAPIView,
     BudgetAPIView,
+    DemoAnomaliesAPIView,
+    DemoBudgetAPIView,
+    DemoInsightsAPIView,
+    DemoSummaryAPIView,
+    DemoTransactionsAPIView,
+    DemoUserAPIView,
     InsightsAPIView,
     LoginView,
     RegisterView,
@@ -29,5 +35,12 @@ urlpatterns = [
     path("insights/", InsightsAPIView.as_view(), name="insights"),
     path("budget/", BudgetAPIView.as_view(), name="budget"),
     path("anomalies/", AnomaliesAPIView.as_view(), name="anomalies"),
+    # Demo/Guest mode endpoints (public read-only fictional data)
+    path("demo/user/", DemoUserAPIView.as_view(), name="demo-user"),
+    path("demo/transactions/", DemoTransactionsAPIView.as_view(), name="demo-transactions"),
+    path("demo/summary/", DemoSummaryAPIView.as_view(), name="demo-summary"),
+    path("demo/insights/", DemoInsightsAPIView.as_view(), name="demo-insights"),
+    path("demo/budget/", DemoBudgetAPIView.as_view(), name="demo-budget"),
+    path("demo/anomalies/", DemoAnomaliesAPIView.as_view(), name="demo-anomalies"),
     path("", include(router.urls)),
 ]
