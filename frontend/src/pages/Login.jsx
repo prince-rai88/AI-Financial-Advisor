@@ -102,7 +102,10 @@ export default function Login({ onLoginSuccess, onGuestLogin }) {
           </p>
 
           {/* Interactive 3D Apple Titanium Card WebGL Canvas */}
-          <div className="w-full h-72 sm:h-80 relative rounded-3xl overflow-hidden apple-card-subtle p-2 mb-6 group cursor-grab active:cursor-grabbing">
+          <div className="w-full h-80 sm:h-96 relative rounded-3xl overflow-hidden apple-card-subtle p-1 mb-6 group cursor-grab active:cursor-grabbing border border-white/10 shadow-2xl bg-gradient-to-b from-white/[0.03] to-black/40 backdrop-blur-xl">
+            {/* Subtle radial aura behind the 3D card */}
+            <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(0,229,153,0.12),transparent_70%)]" />
+            
             <Suspense
               fallback={
                 <div className="w-full h-full flex items-center justify-center">
@@ -115,8 +118,8 @@ export default function Login({ onLoginSuccess, onGuestLogin }) {
 
             {/* Micro 3D Interaction Tip */}
             <div className="absolute bottom-3 inset-x-0 flex items-center justify-center pointer-events-none">
-              <span className="text-[10px] font-mono tracking-widest uppercase px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/50">
-                Move pointer to tilt 3D physical titanium card
+              <span className="text-[10px] font-mono tracking-widest uppercase px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/60 shadow-lg">
+                Interactive 3D Titanium · Move pointer to tilt
               </span>
             </div>
           </div>
